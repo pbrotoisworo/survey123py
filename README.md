@@ -25,8 +25,15 @@ survey.load_survey("Survey123FormConfig.yaml")
 survey.save_survey("output.xlsx")
 ```
 
+### CLI Usage
 
-### YAML File
+You can also use the CLI tool to generate Survey123 forms directly from the command line.
+
+```bash
+python main.py -v 3.22 --input sample_survey.yaml --output custom_output.xlsx
+```
+
+## YAML File
 ```yaml
 settings:
   form_title: Asset Inspection

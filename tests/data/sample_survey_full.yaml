@@ -1,7 +1,6 @@
 settings:
-  form_title: Test Survey
-  instance_name: Test_Instance
-  namespaces: esri=https://esri.com/xforms
+  form_title: Asset Inspection
+  instance_name: Asset_Inspection
 
 choices:
   - list_name: yes_no
@@ -10,55 +9,35 @@ choices:
   - list_name: yes_no
     name: no
     label: No
-  - list_name: yes_no_na
-    name: yes
-    label: Yes
-  - list_name: yes_no_na
-    name: no
-    label: No
-  - list_name: yes_no_na
-    name: na
-    label: NA
+  - list_name: asset_types
+    name: sign
+    label: Sign
+  - list_name: asset_types
+    name: vehicle
+    label: Vehicle
 
 survey:
-  - type: text
-    name: q1
-    label: What is your favorite fruit?
+  
   - type: group
-    name: group1
-    label: Group 1
+    name: groupInfo
+    label: Asset Information
     children:
       - type: text
-        name: q2
-        label: What is your name?
-        readonly: yes
-      - type: integer
-        name: q3
-        label: What is your age?
+        name: assetCode
+        label: Asset Code
         required: yes
-  - type: group
-    name: group2
-    label: Group 2
-    children:
-      - type: text
-        name: q4
-        label: What is your favorite animal?
-      - type: text
-        name: q5
-        label: What are your hobbies?
-  - type: text
-    name: q6
-    label: What is your favorite color?
-    hint: Please enter a color.
+      - type: select_one asset_types
+        name: assetType
+        label: What asset is this?
+  - type: select_one yes_no
+    name: assetStatus
+    label: Asset passes inspection?
+    hint: Answering "No" will require additional follow up inspection.
   - type: repeat
     name: repeat1
-    label: Repeat Section
+    label: Issue List
     children:
       - type: text
-        name: q7
-        label: What is your favorite book?
+        name: issueDescription
+        label: Add issue information if relevant
         readonly: yes
-      - type: text
-        name: q8
-        label: What is your favorite movie?
-        required: yes

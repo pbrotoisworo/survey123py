@@ -1,8 +1,30 @@
 # survey123py
-Survey123py was built to provide an alternative to building a Survey123 Form using Microsoft Excel. By using YAML to build Survey123 forms it will allow for easier diff checking in versioin control systems and less overwhelm in checking an Excel sheet with 40+ columns.
 
-## Sample Input
+Survey123py was built to provide an alternative to building a Survey123 Form using Microsoft Excel. By using YAML to build Survey123 forms it will allow for easier diff checking in version control systems and less overwhelm in checking an Excel sheet with 40+ columns.
 
+Please take note this package does publish your Survey123 form. You have still have to do it via Survey123 Connect.
+
+## Installation
+
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install survey123py.
+
+```bash
+pip install git+https://github.com/pbrotoisworo/survey123py.git
+```
+
+## Usage
+
+### Python
+```python
+from survey123py.form import FormData
+
+survey = FormData(version="3.22")
+survey.load_survey("Survey123FormConfig.yaml")
+survey.save_survey("output.xlsx")
+```
+
+
+### YAML File
 ```yaml
 settings:
   form_title: Test Survey
@@ -69,3 +91,8 @@ survey:
         label: What is your favorite movie?
         required: yes
 ```
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first
+to discuss what you would like to change.

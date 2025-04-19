@@ -56,9 +56,29 @@ class FormData:
                 print(f"Error loading sheet {sheet_name}: {e}")
         self.form_version = self.sheets["Version"].iloc[1]["Unnamed: 1"]
     
-    def load_survey(self, path: str):
+    def load_yaml(self, path: str):
         """
-        Load YAML file containing survey data and convert it to a DataFrame.
+        Load YAML file containing survey data and convert it to a DataFrame
+        to be stored in the sheets property.
+        
+        Once loaded. The available sheets are:
+        - survey
+        - choices
+        - settings
+        - version
+        - Question types
+        - Appearances
+        - Field types
+        - Reference
+        - Reserved
+        
+        You can access the different sheets using the code sample below:
+        ```python
+        survey = FormData("3.22")
+        survey.load_yaml("path/to/survey.yaml")
+        survey.sheets["survey"]  # Access the survey sheet
+        survey.sheets["choices"]  # Access the choices sheet
+        ```
 
         Parameters
         ----------
@@ -69,6 +89,8 @@ class FormData:
         with open(path, 'r') as file:
             survey_data = yaml.safe_load(file)
             self.yaml_data = survey_data
+
+        # Validate
 
         with open(self._template_paths[self.form_version]["columns"]) as f:
             template_cols = json.load(f)

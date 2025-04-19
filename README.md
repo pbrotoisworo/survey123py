@@ -1,14 +1,14 @@
-# survey123py
+# Survey123Py
 
-Survey123py is a tool designed to simplify the creation of Survey123 forms by offering an alternative to the traditional Microsoft Excel workflow. Instead of managing complex forms in Excel with 40+ columns Survey123py lets you define your form structure using YAML — making it easier to read, maintain, and track changes using version control systems like Git.
+Survey123Py is a tool designed to simplify the creation of Survey123 forms by offering an alternative to the traditional Microsoft Excel workflow. Instead of managing complex forms in Excel with 40+ columns Survey123Py lets you define your form structure using YAML — making it easier to read, maintain, and track changes using version control systems like Git.
 
 In it's current form, it only creates the form and does not validate the output. Long term goals include to add data validation similar to Survey123 Connect.
 
-**Note**: survey123py does not publish your form. You’ll still need to use Survey123 Connect to publish the final version.
+**Note**: Survey123Py does not publish your form. You’ll still need to use Survey123 Connect to publish the final version.
 
 ## Installation
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install survey123py.
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install Survey123Py.
 
 ```bash
 pip install git+https://github.com/pbrotoisworo/survey123py.git
@@ -54,7 +54,6 @@ choices:
     label: Vehicle
 
 survey:
-  
   - type: group
     name: groupInfo
     label: Asset Information

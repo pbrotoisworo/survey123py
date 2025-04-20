@@ -4,6 +4,34 @@ import shutil
 import yaml
 import pandas as pd
 import openpyxl
+from dataclasses import dataclass
+
+@dataclass
+class Sheets:
+    """
+    Class to store constant value sheet names for Survey123
+
+    They are in the order:
+    - Survey
+    - Choices
+    - Settings
+    - Version
+    - Question Types
+    - Appearances
+    - Field types
+    - Reference
+    - Reserved
+    """
+    survey: str = "survey"
+    choices: str = "choices"
+    settings: str = "settings"
+    version: str = "Version"
+    question_types: str = "Question Types"
+    appearances: str = "Appearances"
+    field_types: str = "Field types"
+    reference: str = "Reference"
+    reserved: str = "Reserved"
+
 
 class FormData:
     """
@@ -13,15 +41,15 @@ class FormData:
     def __init__(self, version: str):
         self._module_dir = Path(__file__).parent
         self.sheets = {
-            "survey": None,
-            "choices": None,
-            "settings": None,
-            "Version": None,
-            "Question types": None,
-            "Appearances": None,
-            "Field types": None,
-            "Reference": None,
-            "Reserved": None
+            Sheets.survey: None,
+            Sheets.choices: None,
+            Sheets.settings: None,
+            Sheets.version: None,
+            Sheets.question_types: None,
+            Sheets.appearances: None,
+            Sheets.field_types: None,
+            Sheets.reference: None,
+            Sheets.reserved: None
         }
         self._template_paths = {
             "3.22": {
@@ -51,10 +79,10 @@ class FormData:
 
         for sheet_name in self.sheets.keys():
             try:
-                self.sheets[sheet_name] = pd.read_excel(self._template_paths[version]["survey"], sheet_name=sheet_name)
+                self.sheets[sheet_name] = pd.read_excel(self._template_paths[version][Sheets.survey], sheet_name=sheet_name)
             except ValueError as e:
                 print(f"Error loading sheet {sheet_name}: {e}")
-        self.form_version = self.sheets["Version"].iloc[1]["Unnamed: 1"]
+        self.form_version = self.sheets[Sheets.version].iloc[1]["Unnamed: 1"]
     
     def load_yaml(self, path: str):
         """
@@ -95,19 +123,19 @@ class FormData:
         with open(self._template_paths[self.form_version]["columns"]) as f:
             template_cols = json.load(f)
 
-        for sheet_name in ["survey", "choices", "settings"]:
+        for sheet_name in [Sheets.survey, Sheets.choices, Sheets.settings]:
             if sheet_name not in survey_data.keys():
                 print("WARNING: Sheet name not found in survey data:", sheet_name)
                 continue
 
-            if sheet_name == "settings":
+            if sheet_name == Sheets.settings:
                 # Due to the way settings are structured, it is not in a list.
                 # We need to convert it to a list so that it can be loaded into a DataFrame.
                 if isinstance(survey_data[sheet_name], dict):
                     survey_data[sheet_name] = [survey_data[sheet_name]]
                 self.sheets[sheet_name] = pd.DataFrame(survey_data[sheet_name])
 
-            if sheet_name == "choices":
+            if sheet_name == Sheets.choices:
                 choices_data_processed = []
                 for field in survey_data[sheet_name]:
                     choices_data_processed.append(field)
@@ -117,7 +145,7 @@ class FormData:
                 df = pd.DataFrame(columns=template_cols[sheet_name])
                 self.sheets[sheet_name] = pd.concat([df, df_input], axis=0, ignore_index=True)
 
-            if sheet_name == "survey":
+            if sheet_name == Sheets.survey:
                 survey_data_processed = []
                 for _, field in enumerate(survey_data[sheet_name]):
                     
@@ -152,14 +180,14 @@ class FormData:
         """
         # Copy template file to the output path and load it using openpyxl
         # to preserve formatting and styles
-        shutil.copy(self._template_paths[self.form_version]["survey"], outpath)
+        shutil.copy(self._template_paths[self.form_version][Sheets.survey], outpath)
         wb = openpyxl.load_workbook(outpath)
 
         with open(self._template_paths[self.form_version]["columns"]) as f:
             template_cols = json.load(f)
         
         # Iterate through the sheets and write the data to the corresponding sheets
-        target_sheets = ["survey", "choices", "settings"]
+        target_sheets = [Sheets.survey, Sheets.choices, Sheets.settings]
         for sheet_name in list(self.yaml_data.keys()):
             sheet_data = self.sheets.get(sheet_name, None)
             if sheet_data is None or sheet_name not in target_sheets:
@@ -170,7 +198,7 @@ class FormData:
             excel_col = None
             excel_row = None
 
-            if sheet_name == "settings":
+            if sheet_name == Sheets.settings:
                 input_data = sheet_data.iloc[0].to_dict()
                 for col in template_cols["settings"]:
                     excel_col = template_cols["settings"][col]
@@ -178,14 +206,14 @@ class FormData:
                     target_cell = f"{excel_col}{excel_row}"
                     ws[target_cell].value = input_data.get(col, None)
 
-            if sheet_name == "survey" or sheet_name == "choices":
+            if sheet_name == Sheets.survey or sheet_name == Sheets.choices:
 
                 # Start at row 3 to give some space between column titles and data
                 excel_row = 3
 
                 for _, row in sheet_data.iterrows():
                     input_data = row.to_dict()
-                    if sheet_name == "choices":
+                    if sheet_name == Sheets.choices:
                         for col in template_cols["choices"]:
                             excel_col = template_cols["choices"][col]
                             target_cell = f"{excel_col}{excel_row}"
@@ -195,7 +223,7 @@ class FormData:
                             ws[target_cell].value = cell_data
                         excel_row += 1
                     
-                    if sheet_name == "survey":
+                    if sheet_name == Sheets.survey:
                         for col in template_cols["survey"]:
                             excel_col = template_cols["survey"][col]
                             target_cell = f"{excel_col}{excel_row}"

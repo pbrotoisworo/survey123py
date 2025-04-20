@@ -123,56 +123,59 @@ class FormData:
         with open(self._template_paths[self.form_version]["columns"]) as f:
             template_cols = json.load(f)
 
-        for sheet_name in [Sheets.survey, Sheets.choices, Sheets.settings]:
-            if sheet_name not in survey_data.keys():
-                print("WARNING: Sheet name not found in survey data:", sheet_name)
+        if Sheets.survey in survey_data.keys():
+            self.sheets[Sheets.survey] = self._load_yaml_survey_sheet(survey_data, template_cols)
+        if Sheets.choices in survey_data.keys():
+            self.sheets[Sheets.choices] = self._load_yaml_choices_sheet(survey_data, template_cols)
+        if Sheets.settings in survey_data.keys():
+            self.sheets[Sheets.settings] = self._load_yaml_settings_sheet(survey_data)
+                
+
+    def _load_yaml_settings_sheet(self, survey_data):
+        # Due to the way settings are structured, it is not in a list.
+        # We need to convert it to a list so that it can be loaded into a DataFrame.
+        if isinstance(survey_data[Sheets.settings], dict):
+            survey_data[Sheets.settings] = [survey_data[Sheets.settings]]
+        return pd.DataFrame(survey_data[Sheets.settings])
+    
+    def _load_yaml_choices_sheet(self, survey_data, template_cols):
+        choices_data_processed = []
+        for field in survey_data[Sheets.choices]:
+            choices_data_processed.append(field)
+        df_input = pd.DataFrame(choices_data_processed)
+        df_input["name"] = df_input["name"].replace({True: "yes", False: "no"})
+        df_input["label"] = df_input["label"].replace({True: "yes", False: "no"})
+        df = pd.DataFrame(columns=template_cols[Sheets.choices])
+        return pd.concat([df, df_input], axis=0, ignore_index=True)
+    
+    def _load_yaml_survey_sheet(self, survey_data, template_cols):
+        survey_data_processed = []
+        for _, field in enumerate(survey_data[Sheets.survey]):
+            
+            # Process groups and add the begin/end group statements automatically
+            if field["type"] == "group":
+                survey_data_processed.append({"type": "begin group", "name": field["name"], "label": field["label"]})
+                for child in field["children"]:
+                    survey_data_processed.append(child)
+                survey_data_processed.append({"type": "end group"})
                 continue
 
-            if sheet_name == Sheets.settings:
-                # Due to the way settings are structured, it is not in a list.
-                # We need to convert it to a list so that it can be loaded into a DataFrame.
-                if isinstance(survey_data[sheet_name], dict):
-                    survey_data[sheet_name] = [survey_data[sheet_name]]
-                self.sheets[sheet_name] = pd.DataFrame(survey_data[sheet_name])
-
-            if sheet_name == Sheets.choices:
-                choices_data_processed = []
-                for field in survey_data[sheet_name]:
-                    choices_data_processed.append(field)
-                df_input = pd.DataFrame(choices_data_processed)
-                df_input["name"] = df_input["name"].replace({True: "yes", False: "no"})
-                df_input["label"] = df_input["label"].replace({True: "yes", False: "no"})
-                df = pd.DataFrame(columns=template_cols[sheet_name])
-                self.sheets[sheet_name] = pd.concat([df, df_input], axis=0, ignore_index=True)
-
-            if sheet_name == Sheets.survey:
-                survey_data_processed = []
-                for _, field in enumerate(survey_data[sheet_name]):
-                    
-                    # Process groups and add the begin/end group statements automatically
-                    if field["type"] == "group":
-                        survey_data_processed.append({"type": "begin group", "name": field["name"], "label": field["label"]})
-                        for child in field["children"]:
-                            survey_data_processed.append(child)
-                        survey_data_processed.append({"type": "end group"})
-                        continue
-
-                    # Process repeats and add the begin/end group statements automatically
-                    if field["type"] == "repeat":
-                        survey_data_processed.append({"type": "begin repeat", "name": field["name"], "label": field["label"]})
-                        for child in field["children"]:
-                            survey_data_processed.append(child)
-                        survey_data_processed.append({"type": "end repeat"})
-                        continue
-                    survey_data_processed.append(field)
-            
-                df_input = pd.DataFrame(survey_data_processed)
-                df_input["readonly"] = df_input["readonly"].map({True: "yes"})
-                df_input["required"] = df_input["required"].map({True: "yes"})
-                
-                
-                df = pd.DataFrame(columns=template_cols[sheet_name])
-                self.sheets[sheet_name] = pd.concat([df, df_input], axis=0, ignore_index=True)
+            # Process repeats and add the begin/end group statements automatically
+            if field["type"] == "repeat":
+                survey_data_processed.append({"type": "begin repeat", "name": field["name"], "label": field["label"]})
+                for child in field["children"]:
+                    survey_data_processed.append(child)
+                survey_data_processed.append({"type": "end repeat"})
+                continue
+            survey_data_processed.append(field)
+    
+        df_input = pd.DataFrame(survey_data_processed)
+        df_input["readonly"] = df_input["readonly"].map({True: "yes"})
+        df_input["required"] = df_input["required"].map({True: "yes"})
+        
+        
+        df = pd.DataFrame(columns=template_cols[Sheets.survey])
+        return pd.concat([df, df_input], axis=0, ignore_index=True)
 
     def save_survey(self, outpath: str):
         """

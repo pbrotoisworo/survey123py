@@ -16,7 +16,7 @@ class Sheets:
     - Choices
     - Settings
     - Version
-    - Question Types
+    - Question types
     - Appearances
     - Field types
     - Reference
@@ -26,7 +26,7 @@ class Sheets:
     choices: str = "choices"
     settings: str = "settings"
     version: str = "Version"
-    question_types: str = "Question Types"
+    question_types: str = "Question types"
     appearances: str = "Appearances"
     field_types: str = "Field types"
     reference: str = "Reference"

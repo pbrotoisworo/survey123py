@@ -15,15 +15,15 @@ class TestSurvey123_322(unittest.TestCase):
         self.survey.load_yaml(self.test_file)
 
         # All data from template and YAML must be loaded into a dataframe
-        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.survey], pd.DataFrame))
-        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.choices], pd.DataFrame))
-        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.settings], pd.DataFrame), f"Got {type(self.survey.sheets[self.sheet_names.settings])} {self.survey.sheets[self.sheet_names.settings]}")
-        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.version], pd.DataFrame))
-        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.question_types], pd.DataFrame))
-        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.appearances], pd.DataFrame))
-        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.field_types], pd.DataFrame))
-        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.reference], pd.DataFrame))
-        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.reserved], pd.DataFrame))
+        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.survey], pd.DataFrame), f"Expecting pd.DataFrame. Got {type(self.survey.sheets[self.sheet_names.survey])}")
+        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.choices], pd.DataFrame), f"Expecting pd.DataFrame. Got {type(self.survey.sheets[self.sheet_names.choices])}")
+        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.settings], pd.DataFrame), f"Expecting pd.DataFrame. Got {type(self.survey.sheets[self.sheet_names.settings])}")
+        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.version], pd.DataFrame), f"Expecting pd.DataFrame. Got {type(self.survey.sheets[self.sheet_names.version])}")
+        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.question_types], pd.DataFrame), f"Expecting pd.DataFrame. Got {type(self.survey.sheets[self.sheet_names.question_types])}")
+        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.appearances], pd.DataFrame), f"Expecting pd.DataFrame. Got {type(self.survey.sheets[self.sheet_names.appearances])}")
+        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.field_types], pd.DataFrame), f"Expecting pd.DataFrame. Got {type(self.survey.sheets[self.sheet_names.field_types])}")
+        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.reference], pd.DataFrame), f"Expecting pd.DataFrame. Got {type(self.survey.sheets[self.sheet_names.reference])}")
+        self.assertTrue(isinstance(self.survey.sheets[self.sheet_names.reserved], pd.DataFrame), f"Expecting pd.DataFrame. Got {type(self.survey.sheets[self.sheet_names.reserved])}")
 
         # TODO: Verify dataframe values
 

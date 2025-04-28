@@ -2,9 +2,12 @@ import json
 from pathlib import Path
 import shutil
 import yaml
+from dataclasses import dataclass
+
 import pandas as pd
 import openpyxl
-from dataclasses import dataclass
+from pyxform.xls2json import parse_file_to_json
+from pyxform.errors import PyXFormError
 
 @dataclass
 class Sheets:
@@ -235,6 +238,23 @@ class FormData:
                         excel_row += 1
 
         wb.save(outpath)
+        
+        # Validate output file is valid
+        is_valid, error = self._validate_survey(outpath)
+        if is_valid is False:
+            print(f"Warning: Output file is not valid.")
+            print(error)
+        
+
+    def _validate_survey(self, path) -> bool:
+        """
+        Validate the .xlsx file is valid according to ODK standard.
+        """
+        try:
+            survey = parse_file_to_json(path)
+            return True, None
+        except PyXFormError as e:
+            return False, e
 
 if __name__ == "__main__":
     pass

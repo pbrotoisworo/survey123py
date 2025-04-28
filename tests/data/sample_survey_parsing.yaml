@@ -1,0 +1,24 @@
+settings:
+  form_title: Parser Test
+  instance_name: Parser_Test
+
+survey:
+  - type: text
+    name: q1
+    label: What is your name?
+    survey123py::preview_input: John Doe
+  - type: integer
+    name: q2
+    label: How old are you?
+    survey123py::preview_input: 30
+  - type: group
+    name: groupInfo
+    label: Personal Data (${q1})
+    children:
+      - type: text
+        name: nationality
+        label: Nationality of ${q1}. Age ${q2}
+        required: yes
+  - type: note
+    name: q4
+    label: The answers are ${q1} and ${q2}

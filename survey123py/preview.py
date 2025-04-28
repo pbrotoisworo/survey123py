@@ -73,21 +73,33 @@ class FormPreviewer:
                                     if match in self.ctx:
                                         # Replace ${} variable with variable in data ctx
                                         survey_data["survey"][i]["children"][0][key] = item2[key].replace("${" + match + "}", str(self.ctx[match]))
+                                    else:
+                                        var_name = "${" +  match + "}"
+                                        raise ValueError(f"Element {var_name} not found in data context. Please check the YAML file.")
             
             for key, value in item.items():
                 if key not in ["type", "name", "survey123py::preview_input", "children"]:
                     matches = re.findall(pattern, value)
                     if matches:
                         for match in matches:
+                            print(match)
                             if match in self.ctx:
                                 # Replace ${} variable with variable in data ctx
                                 survey_data["survey"][i][key] = item[key].replace("${" + match + "}", str(self.ctx[match]))
+                            else:
+                                var_name = "${" +  match + "}"
+                                raise ValueError(f"Element {var_name} not found in data context. Please check the YAML file.")
         return survey_data
     
-    def show_preview(self):
-
+    def show_preview(self, outpath: str = None):
         """
         Generate a preview of the form output by parsing the YAML file and replacing variable references with their values.
+
+        Parameters
+        ----------
+        outpath : str, optional
+            Path to save the preview output. If None, the output will not be saved to a file.
+            Default is None.
 
         Returns
         -------
@@ -96,6 +108,11 @@ class FormPreviewer:
         """
         # Parse variables in the survey data
         self.output_data = self._parse_vars(self.output_data)
+
+        if outpath:
+            # Save the parsed survey data to a file if outpath is provided
+            with open(outpath, 'w') as file:
+                yaml.dump(self.output_data, file, default_flow_style=False)
         
         # Return the parsed survey data
         return self.output_data

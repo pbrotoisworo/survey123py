@@ -42,7 +42,7 @@ class FormPreviewer:
         for item in self.output_data["survey"]:
             value = item.get("survey123py::preview_input")
             
-            if value:
+            if value or item.get("calculation"):
 
                 ctx[item["name"]] = {"value": "", "type": item.get("type")}
                 if item.get("type") == "integer":
@@ -58,7 +58,7 @@ class FormPreviewer:
 
                 for item2 in item["children"]:
                     value2 = item2.get("survey123py::preview_input")
-                    if value2:
+                    if value2 or item2.get("calculation"):
                         ctx[item2["name"]] = {"value": "", "type": item2.get("type")}
                         if item2.get("type") == "integer":
                             value2 = int(value2)

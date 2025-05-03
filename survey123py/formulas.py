@@ -1,5 +1,6 @@
 # All formulas available in Survey123 are implemented here.
 # For full documentation, see: https://doc.arcgis.com/en/survey123/desktop/create-surveys/xlsformformulas.htm
+import math
 
 def if_(statement, a, b) -> bool:
     """
@@ -53,3 +54,17 @@ def ends_with(string: str, substring: str):
     `ends-with(${question_one}, 'hand.')z`
     """
     return string.endswith(substring)
+
+def acos(value: float) -> float:
+    """
+    Returns the arccosine of the value in radians.
+    Value must be in the range [-1, 1].
+
+    Example:
+
+    `acos(${question_one})`
+    """
+    value = float(value)
+    if value < -1 or value > 1:
+        raise ValueError("Value must be in the range [-1, 1]")
+    return math.acos(value)

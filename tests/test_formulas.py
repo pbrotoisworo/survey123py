@@ -114,5 +114,40 @@ class TestSurvey123_322_Preview(unittest.TestCase):
 
         # Cleanup
         os.remove(self.test_tmp_file)
+
+    def test_acos(self):
+        tpl = self.tpl.copy()
+        val1 = 0.5
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Input for arc cosine calculation",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Acos Calculation",
+                "calculation": "acos(${q1})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Acos Output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 1.0471975511965979, 5, msg="acos calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
          
 

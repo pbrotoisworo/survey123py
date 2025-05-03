@@ -22,6 +22,8 @@ class FormPreviewer:
         yaml : str
             Path to the YAML file containing survey data.
         """
+        # This pattern matches ${var_name} in the string
+        self.var_pattern = r"\$\{(\w+)\}"
         # Load YAML file
         with open(yaml_path, 'r') as file:
             self.yaml_data = yaml.safe_load(file)
@@ -70,6 +72,21 @@ class FormPreviewer:
                             ctx[item2["name"]]["value"] = f"\"{ctx[item2['name']]['value']}\""
         if len(ctx) == 0:
             raise ValueError("No preview input found in the YAML file. Please add survey123py::preview_input fields to the YAML file.")
+        
+        # Load calculation columns
+        self.output_data["survey"]
+        for item in [x for x in self.output_data["survey"] if "calculation" in x]:
+            value = item["calculation"]
+            matches = re.findall(self.var_pattern, value)
+            if matches:
+                for match in matches:
+                    value = value.replace("${" + match + "}", ctx[match]["value"])
+                ctx[item["name"]] = {"value": value, "type": item.get("type")}
+            ctx[item["name"]]["value"] = eval(ctx[item["name"]]["value"])
+            if ctx[item["name"]]["type"] == "text":
+                # Need to escape quotes in the string so it can be used by eval() properly
+                ctx[item["name"]]["value"] = f"\"{ctx[item['name']]['value']}\""
+                
         return ctx
     
     def _parse_vars(self, survey_data: dict):
@@ -77,8 +94,6 @@ class FormPreviewer:
         This converts all variable references in the YAML data to their corresponding values in the data context
         (as  given by the `survey123py::preview_input field`).
         """
-        # This pattern matches ${var_name} in the string
-        pattern = r"\$\{(\w+)\}"
         
         for i, item in enumerate(survey_data["survey"]):
 
@@ -89,7 +104,7 @@ class FormPreviewer:
                         if key not in ["type", "name", "survey123py::preview_input"]:
                             if isinstance(value, bool):
                                 continue
-                            matches = re.findall(pattern, value)
+                            matches = re.findall(self.var_pattern, value)
                             if matches:
                                 for match in matches:
                                     if match in self.ctx:
@@ -107,7 +122,7 @@ class FormPreviewer:
             
             for key, value in item.items():
                 if key not in ["type", "name", "survey123py::preview_input", "children"]:
-                    matches = re.findall(pattern, value)
+                    matches = re.findall(self.var_pattern, value)
                     if matches:
                         for match in matches:
                             if match in self.ctx:

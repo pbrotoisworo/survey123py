@@ -149,5 +149,40 @@ class TestSurvey123_322_Preview(unittest.TestCase):
 
         # Cleanup
         os.remove(self.test_tmp_file)
+
+    def test_cos(self):
+        tpl = self.tpl.copy()
+        val1 = 0.34
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Input for cosine calculation",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Cos Calculation",
+                "calculation": "cos(${q1})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Cos Output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 0.9427546655283462, 5, msg="cos calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
          
 

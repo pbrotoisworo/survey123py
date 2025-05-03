@@ -68,3 +68,14 @@ def acos(value: float) -> float:
     if value < -1 or value > 1:
         raise ValueError("Value must be in the range [-1, 1]")
     return math.acos(value)
+
+def cos(value: float) -> float:
+    """
+    Returns the cosine of the value in radians.
+
+    Example:
+
+    `cos(${question_one})`
+    """
+    value = float(value)
+    return math.cos(value)

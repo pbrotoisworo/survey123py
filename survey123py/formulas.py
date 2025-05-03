@@ -90,3 +90,17 @@ def sin(value: float) -> float:
     """
     value = float(value)
     return math.sin(value)
+
+def asin(value: float) -> float:
+    """
+    Returns the arcsine of the value in radians.
+    Value must be in the range [-1, 1].
+
+    Example:
+
+    `asin(${question_one})`
+    """
+    value = float(value)
+    if value < -1 or value > 1:
+        raise ValueError("Value must be in the range [-1, 1]")
+    return math.asin(value)

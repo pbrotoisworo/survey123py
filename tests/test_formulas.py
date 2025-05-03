@@ -5,6 +5,30 @@ from pathlib import Path
 import yaml
 import os
 
+def generate_math_formula_test_survey(formula: str, input_value: any):
+    """
+    Used to quickly generate a test survey for math formulas.
+    """
+    return [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Input for math calculation",
+                "survey123py::preview_input": input_value
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Acos Calculation",
+                "calculation": formula + "(${q1})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Math output is: ${outputCalculation}",
+            }
+        ]
+
 
 class TestSurvey123_322_Preview(unittest.TestCase):
 
@@ -78,7 +102,6 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         tpl = self.tpl.copy()
         val1 = "Apple"
         val2 = "Red"
-
         tpl["survey"] = [
             {
                 "type": "text",
@@ -117,27 +140,9 @@ class TestSurvey123_322_Preview(unittest.TestCase):
 
     def test_acos(self):
         tpl = self.tpl.copy()
-        val1 = 0.5
+        input_value = 0.5
 
-        tpl["survey"] = [
-            {
-                "type": "text",
-                "name": "q1",
-                "label": "Input for arc cosine calculation",
-                "survey123py::preview_input": val1
-            },
-            {
-                "type": "text",
-                "name": "outputCalculation",
-                "label": "Acos Calculation",
-                "calculation": "acos(${q1})",
-            },
-            {
-                "type": "note",
-                "name": "output",
-                "label": "Acos Output is: ${outputCalculation}",
-            }
-        ]
+        tpl["survey"] = generate_math_formula_test_survey("acos", input_value)
 
         with open(self.test_tmp_file, 'w') as file:
             yaml.dump(tpl, file)
@@ -152,27 +157,9 @@ class TestSurvey123_322_Preview(unittest.TestCase):
 
     def test_cos(self):
         tpl = self.tpl.copy()
-        val1 = 0.34
-
-        tpl["survey"] = [
-            {
-                "type": "text",
-                "name": "q1",
-                "label": "Input for cosine calculation",
-                "survey123py::preview_input": val1
-            },
-            {
-                "type": "text",
-                "name": "outputCalculation",
-                "label": "Cos Calculation",
-                "calculation": "cos(${q1})",
-            },
-            {
-                "type": "note",
-                "name": "output",
-                "label": "Cos Output is: ${outputCalculation}",
-            }
-        ]
+        input_value = 0.34
+        
+        tpl["survey"] = generate_math_formula_test_survey("cos", input_value)
 
         with open(self.test_tmp_file, 'w') as file:
             yaml.dump(tpl, file)
@@ -187,27 +174,9 @@ class TestSurvey123_322_Preview(unittest.TestCase):
 
     def test_sin(self):
         tpl = self.tpl.copy()
-        val1 = 1.5
+        input_value = 1.5
 
-        tpl["survey"] = [
-            {
-                "type": "text",
-                "name": "q1",
-                "label": "Input for sine calculation",
-                "survey123py::preview_input": val1
-            },
-            {
-                "type": "text",
-                "name": "outputCalculation",
-                "label": "Sin Calculation",
-                "calculation": "sin(${q1})",
-            },
-            {
-                "type": "note",
-                "name": "output",
-                "label": "Sin Output is: ${outputCalculation}",
-            }
-        ]
+        tpl["survey"] = generate_math_formula_test_survey("sin", input_value)
 
         with open(self.test_tmp_file, 'w') as file:
             yaml.dump(tpl, file)
@@ -219,5 +188,21 @@ class TestSurvey123_322_Preview(unittest.TestCase):
 
         # Cleanup
         os.remove(self.test_tmp_file)
-         
+    
+    def test_asin(self):
+        tpl = self.tpl.copy()
+        input_value = 0.56
+
+        tpl["survey"] = generate_math_formula_test_survey("asin", input_value)
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 0.5943858000010622, 5, msg="asin calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
 

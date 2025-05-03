@@ -22,6 +22,8 @@ class FormPreviewer:
         yaml : str
             Path to the YAML file containing survey data.
         """
+        # This pattern matches ${var_name} in the string
+        self.var_pattern = r"\$\{(\w+)\}"
         # Load YAML file
         with open(yaml_path, 'r') as file:
             self.yaml_data = yaml.safe_load(file)
@@ -40,14 +42,54 @@ class FormPreviewer:
         """
         ctx = {}
         for item in self.output_data["survey"]:
-            if item.get("survey123py::preview_input"):
-                ctx[item["name"]] = item.get("survey123py::preview_input")
+            value = item.get("survey123py::preview_input")
+            
+            if value or item.get("calculation"):
+
+                ctx[item["name"]] = {"value": "", "type": item.get("type")}
+                if item.get("type") == "integer":
+                    value = int(value)
+                elif item.get("type") == "decimal":
+                    value = float(value)
+                ctx[item["name"]]["value"] = value
+                if item["type"] == "text":
+                    # Need to escape quotes in the string so it can be used by eval() properly
+                    ctx[item["name"]]["value"] = f"\"{ctx[item['name']]['value']}\""
+            
             elif item["type"] == "group" or item["type"] == "repeat":
+
                 for item2 in item["children"]:
-                    if item2.get("survey123py::preview_input"):
-                        ctx[item2["name"]] = item2.get("survey123py::preview_input")
+                    value2 = item2.get("survey123py::preview_input")
+                    if value2 or item2.get("calculation"):
+                        ctx[item2["name"]] = {"value": "", "type": item2.get("type")}
+                        if item2.get("type") == "integer":
+                            value2 = int(value2)
+                        elif item2.get("type") == "decimal":
+                            value2 = float(value2)
+                        ctx[item2["name"]]["value"] = value2
+                        if item2["type"] == "text":
+                            # Need to escape quotes in the string so it can be used by eval() properly
+                            ctx[item2["name"]]["value"] = f"\"{ctx[item2['name']]['value']}\""
         if len(ctx) == 0:
             raise ValueError("No preview input found in the YAML file. Please add survey123py::preview_input fields to the YAML file.")
+        
+        # Load calculation columns
+        self.output_data["survey"]
+        for item in [x for x in self.output_data["survey"] if "calculation" in x]:
+            value = item["calculation"]
+            matches = re.findall(self.var_pattern, value)
+            if matches:
+                for match in matches:
+                    value = value.replace("${" + match + "}", ctx[match]["value"])
+                ctx[item["name"]] = {"value": value, "type": item.get("type")}
+            # Check if value to be evaluated contains things that need to be replaced
+            if "if(" in ctx[item["name"]]["value"]:
+                ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("if(", "if_(")
+            ctx[item["name"]]["value"] = eval(ctx[item["name"]]["value"])
+            if ctx[item["name"]]["type"] == "text":
+                # Need to escape quotes in the string so it can be used by eval() properly
+                ctx[item["name"]]["value"] = f"\"{ctx[item['name']]['value']}\""
+
         return ctx
     
     def _parse_vars(self, survey_data: dict):
@@ -55,8 +97,6 @@ class FormPreviewer:
         This converts all variable references in the YAML data to their corresponding values in the data context
         (as  given by the `survey123py::preview_input field`).
         """
-        # This pattern matches ${var_name} in the string
-        pattern = r"\$\{(\w+)\}"
         
         for i, item in enumerate(survey_data["survey"]):
 
@@ -67,28 +107,57 @@ class FormPreviewer:
                         if key not in ["type", "name", "survey123py::preview_input"]:
                             if isinstance(value, bool):
                                 continue
-                            matches = re.findall(pattern, value)
+                            matches = re.findall(self.var_pattern, value)
                             if matches:
                                 for match in matches:
                                     if match in self.ctx:
+                                        var_value = self.ctx[match]["value"]
+                                        if key == "label" and isinstance(var_value, str):
+                                            var_value = var_value[1:-1]  # Remove the quotes for necessary calculations. label does not support calculations
+                                            
+                                        out_value = item2[key].replace("${" + match + "}", str(var_value))
+                                        
                                         # Replace ${} variable with variable in data ctx
-                                        survey_data["survey"][i]["children"][0][key] = item2[key].replace("${" + match + "}", str(self.ctx[match]))
+                                        survey_data["survey"][i]["children"][0][key] = out_value
                                     else:
                                         var_name = "${" +  match + "}"
                                         raise ValueError(f"Element {var_name} not found in data context. Please check the YAML file.")
             
             for key, value in item.items():
                 if key not in ["type", "name", "survey123py::preview_input", "children"]:
-                    matches = re.findall(pattern, value)
+                    matches = re.findall(self.var_pattern, value)
                     if matches:
                         for match in matches:
-                            print(match)
                             if match in self.ctx:
+                                var_value = self.ctx[match]["value"]
+                                if key == "label" and isinstance(var_value, str):
+                                    var_value = var_value[1:-1]  # Remove the quotes for necessary calculations. label does not support calculations
+
+                                out_value = item[key].replace("${" + match + "}", str(var_value))
+
                                 # Replace ${} variable with variable in data ctx
-                                survey_data["survey"][i][key] = item[key].replace("${" + match + "}", str(self.ctx[match]))
+                                survey_data["survey"][i][key] = out_value
                             else:
                                 var_name = "${" +  match + "}"
                                 raise ValueError(f"Element {var_name} not found in data context. Please check the YAML file.")
+        return survey_data
+    
+    def _parse_formulas(self, survey_data: dict):
+        """
+        Parses formulas in the YAML config. This must be used only after the variables have been parsed using
+        `_parse_vars`
+        """
+        for i, item in enumerate(survey_data["survey"]):
+            for key, value in item.items():
+                if key not in ["type", "name", "label", "survey123py::preview_input", "children"]:
+
+                    # Note: This is called again (other one is in _load_ctx)
+                    # This covers the survey data which is already parsed, for calculations it needs
+                    # to be evaluated again for it to execute
+                    if "if(" in value:
+                        value = value.replace("if(", "if_(")
+                    survey_data["survey"][i][key] = eval(value)
+
         return survey_data
     
     def show_preview(self, outpath: str = None):
@@ -108,6 +177,7 @@ class FormPreviewer:
         """
         # Parse variables in the survey data
         self.output_data = self._parse_vars(self.output_data)
+        self.output_data = self._parse_formulas(self.output_data)
 
         if outpath:
             # Save the parsed survey data to a file if outpath is provided

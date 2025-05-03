@@ -40,12 +40,34 @@ class FormPreviewer:
         """
         ctx = {}
         for item in self.output_data["survey"]:
-            if item.get("survey123py::preview_input"):
-                ctx[item["name"]] = item.get("survey123py::preview_input")
+            value = item.get("survey123py::preview_input")
+            
+            if value:
+
+                ctx[item["name"]] = {"value": "", "type": item.get("type")}
+                if item.get("type") == "integer":
+                    value = int(value)
+                elif item.get("type") == "decimal":
+                    value = float(value)
+                ctx[item["name"]]["value"] = value
+                if item["type"] == "text":
+                    # Need to escape quotes in the string so it can be used by eval() properly
+                    ctx[item["name"]]["value"] = f"\"{ctx[item['name']]['value']}\""
+            
             elif item["type"] == "group" or item["type"] == "repeat":
+
                 for item2 in item["children"]:
-                    if item2.get("survey123py::preview_input"):
-                        ctx[item2["name"]] = item2.get("survey123py::preview_input")
+                    value2 = item2.get("survey123py::preview_input")
+                    if value2:
+                        ctx[item2["name"]] = {"value": "", "type": item2.get("type")}
+                        if item2.get("type") == "integer":
+                            value2 = int(value2)
+                        elif item2.get("type") == "decimal":
+                            value2 = float(value2)
+                        ctx[item2["name"]]["value"] = value2
+                        if item2["type"] == "text":
+                            # Need to escape quotes in the string so it can be used by eval() properly
+                            ctx[item2["name"]]["value"] = f"\"{ctx[item2['name']]['value']}\""
         if len(ctx) == 0:
             raise ValueError("No preview input found in the YAML file. Please add survey123py::preview_input fields to the YAML file.")
         return ctx
@@ -71,8 +93,14 @@ class FormPreviewer:
                             if matches:
                                 for match in matches:
                                     if match in self.ctx:
+                                        var_value = self.ctx[match]["value"]
+                                        if key == "label" and isinstance(var_value, str):
+                                            var_value = var_value[1:-1]  # Remove the quotes for necessary calculations. label does not support calculations
+                                            
+                                        out_value = item2[key].replace("${" + match + "}", str(var_value))
+                                        
                                         # Replace ${} variable with variable in data ctx
-                                        survey_data["survey"][i]["children"][0][key] = item2[key].replace("${" + match + "}", str(self.ctx[match]))
+                                        survey_data["survey"][i]["children"][0][key] = out_value
                                     else:
                                         var_name = "${" +  match + "}"
                                         raise ValueError(f"Element {var_name} not found in data context. Please check the YAML file.")
@@ -82,13 +110,30 @@ class FormPreviewer:
                     matches = re.findall(pattern, value)
                     if matches:
                         for match in matches:
-                            print(match)
                             if match in self.ctx:
+                                var_value = self.ctx[match]["value"]
+                                if key == "label" and isinstance(var_value, str):
+                                    var_value = var_value[1:-1]  # Remove the quotes for necessary calculations. label does not support calculations
+
+                                out_value = item[key].replace("${" + match + "}", str(var_value))
+
                                 # Replace ${} variable with variable in data ctx
-                                survey_data["survey"][i][key] = item[key].replace("${" + match + "}", str(self.ctx[match]))
+                                survey_data["survey"][i][key] = out_value
                             else:
                                 var_name = "${" +  match + "}"
                                 raise ValueError(f"Element {var_name} not found in data context. Please check the YAML file.")
+        return survey_data
+    
+    def _parse_formulas(self, survey_data: dict):
+        """
+        Parses formulas in the YAML config. This must be used only after the variables have been parsed using
+        `_parse_vars`
+        """
+        for i, item in enumerate(survey_data["survey"]):
+            for key, value in item.items():
+                if key not in ["type", "name", "label", "survey123py::preview_input", "children"]:
+                    survey_data["survey"][i][key] = eval(value)
+
         return survey_data
     
     def show_preview(self, outpath: str = None):

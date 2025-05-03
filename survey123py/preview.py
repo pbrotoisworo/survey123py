@@ -153,6 +153,7 @@ class FormPreviewer:
         """
         # Parse variables in the survey data
         self.output_data = self._parse_vars(self.output_data)
+        self.output_data = self._parse_formulas(self.output_data)
 
         if outpath:
             # Save the parsed survey data to a file if outpath is provided

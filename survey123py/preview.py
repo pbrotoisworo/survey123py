@@ -82,11 +82,14 @@ class FormPreviewer:
                 for match in matches:
                     value = value.replace("${" + match + "}", ctx[match]["value"])
                 ctx[item["name"]] = {"value": value, "type": item.get("type")}
+            # Check if value to be evaluated contains things that need to be replaced
+            if "if(" in ctx[item["name"]]["value"]:
+                ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("if(", "if_(")
             ctx[item["name"]]["value"] = eval(ctx[item["name"]]["value"])
             if ctx[item["name"]]["type"] == "text":
                 # Need to escape quotes in the string so it can be used by eval() properly
                 ctx[item["name"]]["value"] = f"\"{ctx[item['name']]['value']}\""
-                
+
         return ctx
     
     def _parse_vars(self, survey_data: dict):
@@ -147,6 +150,12 @@ class FormPreviewer:
         for i, item in enumerate(survey_data["survey"]):
             for key, value in item.items():
                 if key not in ["type", "name", "label", "survey123py::preview_input", "children"]:
+
+                    # Note: This is called again (other one is in _load_ctx)
+                    # This covers the survey data which is already parsed, for calculations it needs
+                    # to be evaluated again for it to execute
+                    if "if(" in value:
+                        value = value.replace("if(", "if_(")
                     survey_data["survey"][i][key] = eval(value)
 
         return survey_data

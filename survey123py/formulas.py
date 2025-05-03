@@ -11,9 +11,16 @@ def if_(statement, a, b) -> bool:
 
     if(selected(${question_one}, 'yes'), 'yes', 'no')
     """
-    if eval(statement):
-        return a
-    return b
+    if isinstance(statement, str):
+        if eval(statement):
+            return a
+        return b
+    elif isinstance(statement, bool):
+        if statement:
+            return a
+        return b
+    else:
+        raise ValueError(f"Value '{statement}' is unsupported. The statement must be a boolean or a string that can be evaluated to a boolean.")
 
 def concat(*args):
     """

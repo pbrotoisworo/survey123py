@@ -96,7 +96,46 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         # Cleanup
         os.remove(self.test_tmp_file)
 
+    def test_if(self):
+        tpl = self.tpl.copy()
+        val1 = "Apple"
+        val2 = "Red"
 
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "What is your favorite fruit?",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "q2",
+                "label": "What is your favorite color?",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "If Calculation",
+                "calculation": "if(contains(${q1}, 'Apple'), 'Yep', 'Nope')",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "If Output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        self.assertEqual(results["survey"][3]["label"], f"If Output is: Yep", "Label not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
 
     def test_concat(self):
         tpl = self.tpl.copy()

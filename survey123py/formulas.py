@@ -79,3 +79,14 @@ def cos(value: float) -> float:
     """
     value = float(value)
     return math.cos(value)
+
+def sin(value: float) -> float:
+    """
+    Returns the sine of the value in radians.
+
+    Example:
+
+    `sin(${question_one})`
+    """
+    value = float(value)
+    return math.sin(value)

@@ -184,5 +184,40 @@ class TestSurvey123_322_Preview(unittest.TestCase):
 
         # Cleanup
         os.remove(self.test_tmp_file)
+
+    def test_sin(self):
+        tpl = self.tpl.copy()
+        val1 = 1.5
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Input for sine calculation",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Sin Calculation",
+                "calculation": "sin(${q1})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Sin Output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 0.9974949866040544, 5, msg="sin calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
          
 

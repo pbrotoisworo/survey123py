@@ -137,6 +137,109 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         # Cleanup
         os.remove(self.test_tmp_file)
 
+    def test_int(self):
+        tpl = self.tpl.copy()
+        val1 = 42
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Input for integer conversion",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Integer Conversion Calculation",
+                "calculation": "int(${q1})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Integer Output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        self.assertEqual(results["survey"][2]["label"], f"Integer Output is: 42", "Label not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_boolean_from_string(self):
+        tpl = self.tpl.copy()
+        val1 = "true"
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Input for boolean conversion",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Boolean Conversion Calculation",
+                "calculation": "boolean_from_string(${q1})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Boolean Output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        self.assertEqual(results["survey"][2]["label"], f"Boolean Output is: True", "Label not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def format_date(self):
+        tpl = self.tpl.copy()
+        val1 = 1718371200000
+        val1_formatted = "2023-10-01"
+
+        tpl["survey"] = [
+            {
+                "type": "date",
+                "name": "q1",
+                "label": "Input Date",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Format Date Calculation",
+                "calculation": "format-date(${q1}, '%Y-%m-%d')",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Formatted Date Output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        self.assertEqual(results["survey"][2]["label"], f"Formatted Date Output is: {val1_formatted}", "Label not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
     def test_starts_with(self):
         tpl = self.tpl.copy()
         val1 = "Apple"
@@ -152,7 +255,7 @@ class TestSurvey123_322_Preview(unittest.TestCase):
                 "type": "text",
                 "name": "outputCalculation",
                 "label": "Starts With Calculation",
-                "calculation": "starts_with(${q1}, 'App')",
+                "calculation": "starts-with(${q1}, 'App')",
             },
             {
                 "type": "note",

@@ -1,5 +1,6 @@
 # All formulas available in Survey123 are implemented here.
 # For full documentation, see: https://doc.arcgis.com/en/survey123/desktop/create-surveys/xlsformformulas.htm
+from datetime import datetime
 import math
 
 def if_(statement, a, b) -> bool:
@@ -21,6 +22,49 @@ def if_(statement, a, b) -> bool:
         return b
     else:
         raise ValueError(f"Value '{statement}' is unsupported. The statement must be a boolean or a string that can be evaluated to a boolean.")
+
+def int_(value: str) -> int:
+    """
+    Converts the value to an integer. If this function is empty, it will return NaN and the question will remain empty.
+
+    Example:
+
+    `int(${question_one})`
+    """
+    if value is None or value == '':
+        return None  # Return None for empty values to keep the question empty
+    try:
+        return int(value)
+    except ValueError:
+        raise ValueError(f"Value '{value}' is unsupported. The value must be a valid integer.")
+
+def boolean_from_string(value: str) -> bool:
+    """
+    Returns true if the string provided is 'true' or '1'. Otherwise, returns false.
+
+    Example:
+
+    `boolean_from_string(${question_one})`
+    """
+    if value.lower() in ['true', '1']:
+        return True
+    elif value.lower() in ['false', '0']:
+        return False
+    else:
+        raise ValueError(f"Value '{value}' is unsupported. The value must be 'true', 'false', '1', or '0'.")
+    
+def format_date(datetime_val: str, format: str) -> str:
+    """
+    Fits an existing date or time value to a defined format. Input must be a date object.
+
+    Example:
+
+    `format_date(${question_one}, '%Y-%m-%d')`
+    """
+    # Convert milliseconds to seconds
+    dt = datetime.fromtimestamp(datetime_val / 1000)
+    # Format using the user-provided format string
+    return dt.strftime(format)
 
 def concat(*args):
     """

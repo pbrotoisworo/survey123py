@@ -85,6 +85,14 @@ class FormPreviewer:
             # Check if value to be evaluated contains things that need to be replaced
             if "if(" in ctx[item["name"]]["value"]:
                 ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("if(", "if_(")
+            if "starts-with(" in ctx[item["name"]]["value"]:
+                ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("starts-with(", "starts_with(")
+            if "int(" in ctx[item["name"]]["value"]:
+                ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("int(", "int_(")
+            if "format-date(" in ctx[item["name"]]["value"]:
+                ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("format-date(", "format_date(")
+            if "boolean-from-string(" in ctx[item["name"]]["value"]:
+                ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("boolean-from-string(", "boolean_from_string(")
             ctx[item["name"]]["value"] = eval(ctx[item["name"]]["value"])
             if ctx[item["name"]]["type"] == "text":
                 # Need to escape quotes in the string so it can be used by eval() properly
@@ -156,6 +164,14 @@ class FormPreviewer:
                     # to be evaluated again for it to execute
                     if "if(" in value:
                         value = value.replace("if(", "if_(")
+                    if "starts-with(" in value:
+                        value = value.replace("starts-with(", "starts_with(")
+                    if "int(" in value:
+                        value = value.replace("int(", "int_(")
+                    if "format-date(" in value:
+                        value = value.replace("format-date(", "format_date(")
+                    if "boolean-from-string(" in value:
+                        value = value.replace("boolean-from-string(", "boolean_from_string(")
                     survey_data["survey"][i][key] = eval(value)
 
         return survey_data

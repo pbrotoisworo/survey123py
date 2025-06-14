@@ -5,7 +5,7 @@ from pathlib import Path
 import yaml
 import os
 
-def generate_math_formula_test_survey(formula: str, input_value: any):
+def generate_test_survey(formula: str, input_value: any):
     """
     Used to quickly generate a test survey for math formulas.
     """
@@ -137,6 +137,142 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         # Cleanup
         os.remove(self.test_tmp_file)
 
+    def test_starts_with(self):
+        tpl = self.tpl.copy()
+        val1 = "Apple"
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "What is your favorite fruit?",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Starts With Calculation",
+                "calculation": "starts_with(${q1}, 'App')",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Starts With Output is: ${outputCalculation}",
+            }
+        ]
+        
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        self.assertEqual(results["survey"][2]["label"], f"Starts With Output is: True", "Label not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_string_length(self):
+        tpl = self.tpl.copy()
+        val1 = "Apple"
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "What is your favorite fruit?",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "String Length Calculation",
+                "calculation": "string_length(${q1})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "String Length Output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        self.assertEqual(results["survey"][2]["label"], f"String Length Output is: 5", "Label not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_string(self):
+        tpl = self.tpl.copy()
+        val1 = 12345
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "What is your favorite number?",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "String Conversion Calculation",
+                "calculation": "string(${q1})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "String Output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        self.assertEqual(results["survey"][2]["label"], f"String Output is: 12345", "Label not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_substr(self):
+        tpl = self.tpl.copy()
+        val1 = "Apple"
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "What is your favorite fruit?",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Substring Calculation",
+                "calculation": "substr(${q1}, 1, 3)",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Substring Output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        self.assertEqual(results["survey"][2]["label"], f"Substring Output is: ppl", "Label not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
     def test_concat(self):
         tpl = self.tpl.copy()
         val1 = "Apple"
@@ -181,7 +317,7 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         tpl = self.tpl.copy()
         input_value = 0.5
 
-        tpl["survey"] = generate_math_formula_test_survey("acos", input_value)
+        tpl["survey"] = generate_test_survey("acos", input_value)
 
         with open(self.test_tmp_file, 'w') as file:
             yaml.dump(tpl, file)
@@ -198,7 +334,7 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         tpl = self.tpl.copy()
         input_value = 0.34
         
-        tpl["survey"] = generate_math_formula_test_survey("cos", input_value)
+        tpl["survey"] = generate_test_survey("cos", input_value)
 
         with open(self.test_tmp_file, 'w') as file:
             yaml.dump(tpl, file)
@@ -215,7 +351,7 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         tpl = self.tpl.copy()
         input_value = 1.5
 
-        tpl["survey"] = generate_math_formula_test_survey("sin", input_value)
+        tpl["survey"] = generate_test_survey("sin", input_value)
 
         with open(self.test_tmp_file, 'w') as file:
             yaml.dump(tpl, file)
@@ -232,7 +368,7 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         tpl = self.tpl.copy()
         input_value = 0.56
 
-        tpl["survey"] = generate_math_formula_test_survey("asin", input_value)
+        tpl["survey"] = generate_test_survey("asin", input_value)
 
         with open(self.test_tmp_file, 'w') as file:
             yaml.dump(tpl, file)

@@ -48,9 +48,42 @@ def starts_with(string: str, substring: str):
 
     Example:
 
-    `starts-with(${question_one}, 'red')`
+    `starts_with(${question_one}, 'red')`
     """
     return string.startswith(substring)
+
+def string_length(string: str) -> int:
+    """
+    Returns the length of the string.
+
+    Example:
+
+    `string_length(${question_one})`
+    """
+    return len(string)
+
+def string(value: str) -> str:
+    """
+    Converts the value to a string.
+
+    Example:
+
+    `string(${question_one})`
+    """
+    return str(value)
+
+def substr(string: str, start: int, end: int = None) -> str:
+    """
+    Returns a substring of the string starting at the specified index.
+    If length is not specified, returns the substring from start to the end of the string.
+
+    Example:
+
+    `substr(${question_one}, 2, 5)`
+    """
+    if end is None:
+        return string[start:]
+    return string[start:start + end]
 
 def ends_with(string: str, substring: str):
     """

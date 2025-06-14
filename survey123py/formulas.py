@@ -53,6 +53,22 @@ def boolean_from_string(value: str) -> bool:
     else:
         raise ValueError(f"Value '{value}' is unsupported. The value must be 'true', 'false', '1', or '0'.")
     
+def date(value: str) -> str:
+    """
+    Converts a number or string to a Survey123 date object (unix timestamp in milliseconds), without preserving time.
+
+    Example:
+
+    `date(${question_one})`
+    """
+    if value is None or value == '':
+        return None  # Return None for empty values to keep the question empty
+    try:
+        outval = datetime.strptime(value, '%Y-%m-%d').timestamp() * 1000
+        return int(outval)
+    except ValueError:
+        raise ValueError(f"Value '{value}' is unsupported. The value must be a valid date in 'YYYY-MM-DD' format.")
+
 def format_date(datetime_val: str, format: str) -> str:
     """
     Fits an existing date or time value to a defined format. Input must be a date object.

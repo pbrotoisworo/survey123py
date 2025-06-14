@@ -205,10 +205,43 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         # Cleanup
         os.remove(self.test_tmp_file)
 
-    def format_date(self):
+    def test_date(self):
+        tpl = self.tpl.copy()
+        val1 = "2017-05-28"
+        val1_ts = 1495900800000
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Input Date",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Date Calculation",
+                "calculation": "date(${q1})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Date Output is: ${outputCalculation}",
+            }
+        ]
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        self.assertEqual(results["survey"][2]["label"], f"Date Output is: {val1_ts}", "Label not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_format_date(self):
         tpl = self.tpl.copy()
         val1 = 1718371200000
-        val1_formatted = "2023-10-01"
+        val1_formatted = "2024-06-14"
 
         tpl["survey"] = [
             {

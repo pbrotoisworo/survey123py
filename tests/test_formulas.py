@@ -575,4 +575,138 @@ class TestSurvey123_322_Preview(unittest.TestCase):
 
         # Cleanup
         os.remove(self.test_tmp_file)
+    
+    def test_and_operator(self):
+        tpl = self.tpl.copy()
+        val1 = True
+        val2 = False
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Boolean value 1",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text", 
+                "name": "q2",
+                "label": "Boolean value 2",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "result_true_false",
+                "label": "And operation result",
+                "calculation": "${q1} and ${q2}",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Result is: ${result_true_false}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][2]["calculation"], False, msg="and operator not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_or_operator(self):
+        tpl = self.tpl.copy()
+        val1 = True
+        val2 = False
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Boolean value 1", 
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "q2", 
+                "label": "Boolean value 2",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "result_true_false",
+                "label": "Or operation result",
+                "calculation": "${q1} or ${q2}",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Result is: ${result_true_false}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][2]["calculation"], True, msg="or operator not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_and_or_combined(self):
+        tpl = self.tpl.copy()
+        val1 = True
+        val2 = False
+        val3 = True
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Boolean value 1",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "q2",
+                "label": "Boolean value 2", 
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "q3",
+                "label": "Boolean value 3",
+                "survey123py::preview_input": val3
+            },
+            {
+                "type": "text",
+                "name": "result_combined",
+                "label": "Combined and/or operation result",
+                "calculation": "(${q1} and ${q2}) or ${q3}",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Result is: ${result_combined}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        # (True and False) or True = False or True = True
+        self.assertEqual(results["survey"][3]["calculation"], True, msg="combined and/or operator not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
 

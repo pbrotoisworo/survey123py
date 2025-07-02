@@ -45,7 +45,7 @@ class FormPreviewer:
         for item in self.output_data["survey"]:
             value = item.get("survey123py::preview_input")
             
-            if value or item.get("calculation"):
+            if value is not None or item.get("calculation"):
 
                 ctx[item["name"]] = {"value": "", "type": item.get("type")}
                 if item.get("type") == "integer":
@@ -53,7 +53,7 @@ class FormPreviewer:
                 elif item.get("type") == "decimal":
                     value = float(value)
                 ctx[item["name"]]["value"] = value
-                if item["type"] == "text":
+                if item["type"] == "text" and not isinstance(value, bool):
                     # Need to escape quotes in the string so it can be used by eval() properly
                     ctx[item["name"]]["value"] = f"\"{ctx[item['name']]['value']}\""
             
@@ -61,14 +61,14 @@ class FormPreviewer:
 
                 for item2 in item["children"]:
                     value2 = item2.get("survey123py::preview_input")
-                    if value2 or item2.get("calculation"):
+                    if value2 is not None or item2.get("calculation"):
                         ctx[item2["name"]] = {"value": "", "type": item2.get("type")}
                         if item2.get("type") == "integer":
                             value2 = int(value2)
                         elif item2.get("type") == "decimal":
                             value2 = float(value2)
                         ctx[item2["name"]]["value"] = value2
-                        if item2["type"] == "text":
+                        if item2["type"] == "text" and not isinstance(value2, bool):
                             # Need to escape quotes in the string so it can be used by eval() properly
                             ctx[item2["name"]]["value"] = f"\"{ctx[item2['name']]['value']}\""
         if len(ctx) == 0:
@@ -95,7 +95,7 @@ class FormPreviewer:
             if "boolean-from-string(" in ctx[item["name"]]["value"]:
                 ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("boolean-from-string(", "boolean_from_string(")
             ctx[item["name"]]["value"] = eval(ctx[item["name"]]["value"])
-            if ctx[item["name"]]["type"] == "text":
+            if ctx[item["name"]]["type"] == "text" and not isinstance(ctx[item["name"]]["value"], bool):
                 # Need to escape quotes in the string so it can be used by eval() properly
                 ctx[item["name"]]["value"] = f"\"{ctx[item['name']]['value']}\""
 

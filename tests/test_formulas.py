@@ -2182,3 +2182,40 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         self.assertEqual(sum("abc", "def", None), 0, 
                         msg="Sum with all non-numeric should return 0")
 
+    def test_modulo_operator(self):
+        """Test modulo operator in constraints and calculations"""
+        tpl = self.tpl.copy()
+        
+        # Test modulo operator in calculation
+        tpl["survey"] = [
+            {"name": "input", "type": "integer", "survey123py::preview_input": 7},
+            {"name": "result", "type": "calculate", "calculation": "${input} mod 3"}
+        ]
+        
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][1]["calculation"], 1, 
+                        msg="Modulo operator in calculation not working correctly")
+        
+        # Test modulo operator in constraint (7 mod 2 = 1, which is not 0, so constraint should be False)
+        tpl["survey"] = [
+            {"name": "input", "type": "integer", "survey123py::preview_input": 7, 
+             "constraint": "${input} mod 2 = 0"}
+        ]
+        
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][0]["constraint_result"], False, 
+                        msg="Modulo operator in constraint not working correctly")
+        
+        # Cleanup
+        os.remove(self.test_tmp_file)
+

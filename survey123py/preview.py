@@ -82,7 +82,10 @@ class FormPreviewer:
             if matches:
                 for match in matches:
                     value = value.replace("${" + match + "}", str(ctx[match]["value"]))
-                ctx[item["name"]] = {"value": value, "type": item.get("type")}
+            # Handle modulo operator
+            if " mod " in value:
+                value = value.replace(" mod ", " % ")
+            ctx[item["name"]] = {"value": value, "type": item.get("type")}
         
         # Load constraint columns (handle dot operator here)
         for item in [x for x in self.output_data["survey"] if "constraint" in x]:
@@ -133,6 +136,12 @@ class FormPreviewer:
             if "version()" in value:
                 survey_settings = self.output_data.get("settings", {})
                 value = value.replace("version()", f"version({survey_settings})")
+            # Handle modulo operator
+            if " mod " in value:
+                value = value.replace(" mod ", " % ")
+            # Handle equality operator (Survey123 uses = but Python uses ==)
+            if " = " in value and " == " not in value:
+                value = value.replace(" = ", " == ")
             
             # Store constraint result in context for evaluation
             constraint_key = f"{item['name']}_constraint"
@@ -168,6 +177,9 @@ class FormPreviewer:
                 if "version()" in value_str:
                     survey_settings = self.output_data.get("settings", {})
                     value_str = value_str.replace("version()", f"version({survey_settings})")
+                # Handle modulo operator
+                if " mod " in value_str:
+                    value_str = value_str.replace(" mod ", " % ")
                 ctx[item["name"]]["value"] = eval(value_str)
                 if ctx[item["name"]]["type"] == "text" and not isinstance(ctx[item["name"]]["value"], bool):
                     # Need to escape quotes in the string so it can be used by eval() properly
@@ -261,6 +273,9 @@ class FormPreviewer:
                     if "version()" in value:
                         survey_settings = survey_data.get("settings", {})
                         value = value.replace("version()", f"version({survey_settings})")
+                    # Handle modulo operator
+                    if " mod " in value:
+                        value = value.replace(" mod ", " % ")
                     survey_data["survey"][i][key] = eval(value)
 
         return survey_data

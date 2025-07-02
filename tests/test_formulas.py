@@ -1926,3 +1926,259 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         # Cleanup
         os.remove(self.test_tmp_file)
 
+    def test_version(self):
+        """Test version function returns settings version"""
+        tpl = self.tpl.copy()
+        tpl["settings"]["version"] = "1.2.3"
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "version_field",
+                "label": "Version",
+                "calculation": "version()",
+                "survey123py::preview_input": "",  # Placeholder value
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][0]["calculation"], "1.2.3", 
+                        msg="Version should return settings version value")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_version_no_settings(self):
+        """Test version function with no version in settings"""
+        tpl = self.tpl.copy()
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "version_field",
+                "label": "Version",
+                "calculation": "version()",
+                "survey123py::preview_input": "",  # Placeholder value
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][0]["calculation"], "", 
+                        msg="Version should return empty string when no version in settings")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_uuid(self):
+        """Test uuid function generates valid UUID"""
+        tpl = self.tpl.copy()
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "uuid_field",
+                "label": "UUID",
+                "calculation": "uuid()",
+                "survey123py::preview_input": "",  # Placeholder value
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        uuid_result = results["survey"][0]["calculation"]
+        # Basic UUID format check (8-4-4-4-12 characters)
+        import re
+        uuid_pattern = r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        self.assertTrue(re.match(uuid_pattern, uuid_result), 
+                       msg=f"UUID should match standard format, got: {uuid_result}")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_today(self):
+        """Test today function returns today's date as timestamp"""
+        tpl = self.tpl.copy()
+        tpl["survey"] = [
+            {
+                "type": "integer",
+                "name": "today_field",
+                "label": "Today",
+                "calculation": "today()",
+                "survey123py::preview_input": 0,  # Placeholder value
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        today_result = results["survey"][0]["calculation"]
+        # Should be an integer timestamp
+        self.assertIsInstance(today_result, int, 
+                             msg="Today should return integer timestamp")
+        # Should be reasonable timestamp (after 2020 and before 2030)
+        from datetime import datetime
+        min_timestamp = int(datetime(2020, 1, 1).timestamp() * 1000)
+        max_timestamp = int(datetime(2030, 1, 1).timestamp() * 1000)
+        self.assertTrue(min_timestamp < today_result < max_timestamp,
+                       msg=f"Today timestamp should be reasonable, got: {today_result}")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_sum(self):
+        """Test sum function with multiple arguments"""
+        tpl = self.tpl.copy()
+        tpl["survey"] = [
+            {
+                "type": "integer",
+                "name": "num1",
+                "label": "Number 1",
+                "survey123py::preview_input": 5
+            },
+            {
+                "type": "integer", 
+                "name": "num2",
+                "label": "Number 2",
+                "survey123py::preview_input": 10
+            },
+            {
+                "type": "text",
+                "name": "non_numeric",
+                "label": "Non-numeric",
+                "survey123py::preview_input": "hello"
+            },
+            {
+                "type": "decimal",
+                "name": "sum_field",
+                "label": "Sum",
+                "calculation": "sum(${num1}, ${num2}, ${non_numeric}, 2.5)",
+                "survey123py::preview_input": 0,  # Placeholder value
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        # Should sum: 5 + 10 + 2.5 = 17.5 (non_numeric "hello" is ignored)
+        self.assertEqual(results["survey"][3]["calculation"], 17.5, 
+                        msg="Sum should add numeric values and ignore non-numeric")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_regex(self):
+        """Test regex function pattern matching"""
+        tpl = self.tpl.copy()
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "phone",
+                "label": "Phone",
+                "survey123py::preview_input": "123-456-7890"
+            },
+            {
+                "type": "text",
+                "name": "email",
+                "label": "Email", 
+                "survey123py::preview_input": "test@example.com"
+            },
+            {
+                "type": "text",
+                "name": "phone_check",
+                "label": "Phone Check",
+                "calculation": "regex('[0-9]{3}-[0-9]{3}-[0-9]{4}', ${phone})",
+                "survey123py::preview_input": "",  # Placeholder value
+            },
+            {
+                "type": "text",
+                "name": "email_check",
+                "label": "Email Check",
+                "calculation": "regex('@', ${email})",
+                "survey123py::preview_input": "",  # Placeholder value
+            },
+            {
+                "type": "text",
+                "name": "invalid_check",
+                "label": "Invalid Check",
+                "calculation": "regex('[0-9]+', 'abc')",
+                "survey123py::preview_input": "",  # Placeholder value
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][2]["calculation"], True, 
+                        msg="Phone regex should match")
+        self.assertEqual(results["survey"][3]["calculation"], True, 
+                        msg="Email regex should match @ symbol")
+        self.assertEqual(results["survey"][4]["calculation"], False, 
+                        msg="Invalid regex should not match numbers in 'abc'")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_random(self):
+        """Test random function returns value between 0 and 1"""
+        tpl = self.tpl.copy()
+        tpl["survey"] = [
+            {
+                "type": "decimal",
+                "name": "random_field",
+                "label": "Random",
+                "calculation": "random()",
+                "survey123py::preview_input": 0,  # Placeholder value
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        random_result = results["survey"][0]["calculation"]
+        self.assertIsInstance(random_result, float, 
+                             msg="Random should return float")
+        self.assertTrue(0 <= random_result < 1, 
+                       msg=f"Random should be between 0 and 1, got: {random_result}")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_new_formulas_error_handling(self):
+        """Test error handling for new formulas"""
+        from survey123py.formulas import regex, sum
+        
+        # Test regex with invalid pattern
+        self.assertEqual(regex("[invalid", "test"), False, 
+                        msg="Invalid regex pattern should return False")
+        
+        # Test sum with empty args
+        self.assertEqual(sum(), 0, 
+                        msg="Sum with no args should return 0")
+        
+        # Test sum with all non-numeric
+        self.assertEqual(sum("abc", "def", None), 0, 
+                        msg="Sum with all non-numeric should return 0")
+

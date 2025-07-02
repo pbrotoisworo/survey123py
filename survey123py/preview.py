@@ -129,6 +129,10 @@ class FormPreviewer:
                 value = value.replace("date-time(", "date_time(")
             if "not(" in value:
                 value = value.replace("not(", "not_(")
+            # Handle version() function
+            if "version()" in value:
+                survey_settings = self.output_data.get("settings", {})
+                value = value.replace("version()", f"version({survey_settings})")
             
             # Store constraint result in context for evaluation
             constraint_key = f"{item['name']}_constraint"
@@ -138,30 +142,36 @@ class FormPreviewer:
         for item in [x for x in self.output_data["survey"] if "calculation" in x]:
             if item["name"] in ctx:
                 # Check if value to be evaluated contains things that need to be replaced
-                if "if(" in ctx[item["name"]]["value"]:
-                    ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("if(", "if_(")
-                if "starts-with(" in ctx[item["name"]]["value"]:
-                    ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("starts-with(", "starts_with(")
-                if "int(" in ctx[item["name"]]["value"]:
-                    ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("int(", "int_(")
-                if "format-date(" in ctx[item["name"]]["value"]:
-                    ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("format-date(", "format_date(")
-                if "boolean-from-string(" in ctx[item["name"]]["value"]:
-                    ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("boolean-from-string(", "boolean_from_string(")
-                if "jr:choice-name(" in ctx[item["name"]]["value"]:
-                    ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("jr:choice-name(", "jr_choice_name(")
-                if "count-selected(" in ctx[item["name"]]["value"]:
-                    ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("count-selected(", "count_selected(")
-                if "decimal-date-time(" in ctx[item["name"]]["value"]:
-                    ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("decimal-date-time(", "decimal_date_time(")
-                if "date-time(" in ctx[item["name"]]["value"]:
-                    ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("date-time(", "date_time(")
-                if "not(" in ctx[item["name"]]["value"]:
-                    ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("not(", "not_(")
-                ctx[item["name"]]["value"] = eval(ctx[item["name"]]["value"])
-            if ctx[item["name"]]["type"] == "text" and not isinstance(ctx[item["name"]]["value"], bool):
-                # Need to escape quotes in the string so it can be used by eval() properly
-                ctx[item["name"]]["value"] = f"\"{ctx[item['name']]['value']}\""
+                # Convert to string first to handle function replacements
+                value_str = str(ctx[item["name"]]["value"])
+                if "if(" in value_str:
+                    value_str = value_str.replace("if(", "if_(")
+                if "starts-with(" in value_str:
+                    value_str = value_str.replace("starts-with(", "starts_with(")
+                if "int(" in value_str:
+                    value_str = value_str.replace("int(", "int_(")
+                if "format-date(" in value_str:
+                    value_str = value_str.replace("format-date(", "format_date(")
+                if "boolean-from-string(" in value_str:
+                    value_str = value_str.replace("boolean-from-string(", "boolean_from_string(")
+                if "jr:choice-name(" in value_str:
+                    value_str = value_str.replace("jr:choice-name(", "jr_choice_name(")
+                if "count-selected(" in value_str:
+                    value_str = value_str.replace("count-selected(", "count_selected(")
+                if "decimal-date-time(" in value_str:
+                    value_str = value_str.replace("decimal-date-time(", "decimal_date_time(")
+                if "date-time(" in value_str:
+                    value_str = value_str.replace("date-time(", "date_time(")
+                if "not(" in value_str:
+                    value_str = value_str.replace("not(", "not_(")
+                # Handle version() function by replacing it with version(survey_settings)
+                if "version()" in value_str:
+                    survey_settings = self.output_data.get("settings", {})
+                    value_str = value_str.replace("version()", f"version({survey_settings})")
+                ctx[item["name"]]["value"] = eval(value_str)
+                if ctx[item["name"]]["type"] == "text" and not isinstance(ctx[item["name"]]["value"], bool):
+                    # Need to escape quotes in the string so it can be used by eval() properly
+                    ctx[item["name"]]["value"] = f"\"{ctx[item['name']]['value']}\""
 
         return ctx
     
@@ -247,6 +257,10 @@ class FormPreviewer:
                         value = value.replace("date-time(", "date_time(")
                     if "not(" in value:
                         value = value.replace("not(", "not_(")
+                    # Handle version() function
+                    if "version()" in value:
+                        survey_settings = survey_data.get("settings", {})
+                        value = value.replace("version()", f"version({survey_settings})")
                     survey_data["survey"][i][key] = eval(value)
 
         return survey_data

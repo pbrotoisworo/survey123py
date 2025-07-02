@@ -3,6 +3,9 @@
 from datetime import datetime
 import math
 import builtins
+import uuid
+import random
+import re
 
 def if_(statement, a, b) -> bool:
     """
@@ -631,3 +634,86 @@ def number(value) -> float:
         return float(value)
     except (ValueError, TypeError):
         return None
+
+def version(survey_settings=None) -> str:
+    """
+    Returns the version specified in the settings section of the YAML file.
+    If no version is specified or survey_settings is None, returns empty string.
+    
+    Example:
+    
+    `version()`
+    """
+    if survey_settings and isinstance(survey_settings, dict) and "version" in survey_settings:
+        return str(survey_settings["version"])
+    return ""
+
+def uuid() -> str:
+    """
+    Generates and returns a universally unique identifier (UUID).
+    
+    Example:
+    
+    `uuid()`
+    """
+    import uuid as uuid_module
+    return str(uuid_module.uuid4())
+
+def today() -> int:
+    """
+    Returns the current date as a timestamp in milliseconds (without time component).
+    Similar to now() but only includes the date part.
+    
+    Example:
+    
+    `today()`
+    """
+    # Get current date and set time to midnight
+    today_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    return int(today_date.timestamp() * 1000)
+
+def sum(*args) -> float:
+    """
+    Returns the sum of all numeric arguments.
+    Non-numeric values are ignored.
+    
+    Example:
+    
+    `sum(${field1}, ${field2}, ${field3})`
+    """
+    total = 0
+    for arg in args:
+        if arg is not None and arg != "":
+            try:
+                total += float(arg)
+            except (ValueError, TypeError):
+                pass  # Skip non-numeric values
+    return total
+
+def regex(pattern: str, text: str) -> bool:
+    """
+    Returns true if the text matches the regular expression pattern.
+    
+    Example:
+    
+    `regex('[0-9]+', ${phone_number})`
+    """
+    if not pattern or not text:
+        return False
+    
+    try:
+        return bool(re.search(str(pattern), str(text)))
+    except re.error:
+        # Invalid regex pattern
+        return False
+
+def random() -> float:
+    """
+    Returns a random decimal number between 0 and 1 (exclusive of 1).
+    
+    Example:
+    
+    `random()`
+    """
+    import random as random_module
+    return random_module.random()

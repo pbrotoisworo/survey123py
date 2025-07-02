@@ -1,5 +1,7 @@
 # Survey123Py
 
+[![Documentation Status](https://readthedocs.org/projects/survey123py/badge/?version=latest)](https://survey123py.readthedocs.io/en/latest/?badge=latest)
+
 Survey123Py is a tool designed to simplify the creation of Survey123 forms by offering an alternative to the traditional Microsoft Excel workflow. Instead of managing complex forms in Excel with 40+ columns Survey123Py lets you define your form structure using YAML — making it easier to read, maintain, and track changes using version control systems like Git.
 
 This package aims to enhance the developer experience by adding custom modules such as the `FormPreviewer` which allows you to verify output using samples inputs using the special field `survey123py::preview_input` in your YAML config.

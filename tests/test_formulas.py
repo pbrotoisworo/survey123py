@@ -516,4 +516,63 @@ class TestSurvey123_322_Preview(unittest.TestCase):
 
         # Cleanup
         os.remove(self.test_tmp_file)
+    
+    def test_atan(self):
+        tpl = self.tpl.copy()
+        input_value = 1.5
+
+        tpl["survey"] = generate_test_survey("atan", input_value)
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 0.9827937232473292, 5, msg="atan calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+    
+    def test_atan2(self):
+        tpl = self.tpl.copy()
+        val1 = 3.0  # y value
+        val2 = 4.0  # x value
+
+        tpl["survey"] = [
+            {
+                "type": "decimal",
+                "name": "q1",
+                "label": "Y coordinate",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "decimal", 
+                "name": "q2",
+                "label": "X coordinate",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Atan2 Calculation",
+                "calculation": "atan2(${q1}, ${q2})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Math output is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][2]["calculation"], 0.6435011087932844, 5, msg="atan2 calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
 

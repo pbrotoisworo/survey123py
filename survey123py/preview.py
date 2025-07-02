@@ -1,5 +1,6 @@
 import re
 import yaml
+from .formulas import *
 
 class FormPreviewer:
 
@@ -80,7 +81,7 @@ class FormPreviewer:
             matches = re.findall(self.var_pattern, value)
             if matches:
                 for match in matches:
-                    value = value.replace("${" + match + "}", ctx[match]["value"])
+                    value = value.replace("${" + match + "}", str(ctx[match]["value"]))
                 ctx[item["name"]] = {"value": value, "type": item.get("type")}
             # Check if value to be evaluated contains things that need to be replaced
             if "if(" in ctx[item["name"]]["value"]:

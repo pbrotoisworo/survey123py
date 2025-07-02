@@ -204,3 +204,27 @@ def asin(value: float) -> float:
     if value < -1 or value > 1:
         raise ValueError("Value must be in the range [-1, 1]")
     return math.asin(value)
+
+def atan(value: float) -> float:
+    """
+    Returns the arctangent of the value in radians.
+
+    Example:
+
+    `atan(${question_one})`
+    """
+    value = float(value)
+    return math.atan(value)
+
+def atan2(y: float, x: float) -> float:
+    """
+    Returns the arctangent of y/x in radians using the signs of both arguments
+    to determine the quadrant of the result.
+
+    Example:
+
+    `atan2(${question_one}, ${question_two})`
+    """
+    y = float(y)
+    x = float(x)
+    return math.atan2(y, x)

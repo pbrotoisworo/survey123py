@@ -1504,3 +1504,425 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         with self.assertRaises(ValueError):
             decimal_date_time("invalid")
 
+    def test_false(self):
+        tpl = self.tpl.copy()
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "False Calculation",
+                "calculation": "false()",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][0]["calculation"], False, 
+                        msg="false() should return False")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_join(self):
+        tpl = self.tpl.copy()
+        val1 = "Apple"
+        val2 = "Orange"
+        val3 = ""  # Empty value (should be excluded)
+        separator = " - "
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Field 1",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "q2",
+                "label": "Field 2",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "q3",
+                "label": "Field 3",
+                "survey123py::preview_input": val3
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Join Calculation",
+                "calculation": f"join('{separator}', ${'{q1}'}, ${'{q2}'}, ${'{q3}'})",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][3]["calculation"], "Apple - Orange", 
+                        msg="join should concatenate non-empty values with separator")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_max(self):
+        tpl = self.tpl.copy()
+        val1 = 10
+        val2 = 5
+        val3 = 15
+
+        tpl["survey"] = [
+            {
+                "type": "integer",
+                "name": "q1",
+                "label": "Number 1",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "integer",
+                "name": "q2",
+                "label": "Number 2",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "integer",
+                "name": "q3",
+                "label": "Number 3",
+                "survey123py::preview_input": val3
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Max Calculation",
+                "calculation": "max(${q1}, ${q2}, ${q3})",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][3]["calculation"], 15.0, 
+                        msg="max should return the largest value")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_min(self):
+        tpl = self.tpl.copy()
+        val1 = 10
+        val2 = 5
+        val3 = 15
+
+        tpl["survey"] = [
+            {
+                "type": "integer",
+                "name": "q1",
+                "label": "Number 1",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "integer",
+                "name": "q2",
+                "label": "Number 2",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "integer",
+                "name": "q3",
+                "label": "Number 3",
+                "survey123py::preview_input": val3
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Min Calculation",
+                "calculation": "min(${q1}, ${q2}, ${q3})",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][3]["calculation"], 5.0, 
+                        msg="min should return the smallest value")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_not(self):
+        tpl = self.tpl.copy()
+        val1 = True
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Boolean value",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Not Calculation",
+                "calculation": "not(${q1})",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][1]["calculation"], False, 
+                        msg="not(True) should return False")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_now(self):
+        tpl = self.tpl.copy()
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Now Calculation",
+                "calculation": "now()",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        # Should return a timestamp in milliseconds (positive integer)
+        self.assertIsInstance(results["survey"][0]["calculation"], int, 
+                             msg="now() should return integer timestamp")
+        self.assertGreater(results["survey"][0]["calculation"], 0, 
+                          msg="now() should return positive timestamp")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_number(self):
+        tpl = self.tpl.copy()
+        val1 = "123.45"  # String that can be converted to number
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Text field with number",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Number Calculation",
+                "calculation": "number(${q1})",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][1]["calculation"], 123.45, 
+                        msg="number should convert string to float")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_additional_functions_error_handling(self):
+        """Test error handling for additional functions"""
+        from survey123py.formulas import false, join, max, min, not_, now, number
+        
+        # Test false (no arguments)
+        self.assertEqual(false(), False)
+        
+        # Test join with empty values
+        self.assertEqual(join("-", "", None, "value"), "value")
+        
+        # Test max/min with no valid numeric values
+        self.assertEqual(max("text", "", None), None)
+        self.assertEqual(min("text", "", None), None)
+        
+        # Test max/min with mixed numeric and non-numeric
+        self.assertEqual(max(1, "text", 3, ""), 3.0)
+        self.assertEqual(min(1, "text", 3, ""), 1.0)
+        
+        # Test not_ with various values
+        self.assertEqual(not_(True), False)
+        self.assertEqual(not_(False), True)
+        self.assertEqual(not_(1), False)
+        self.assertEqual(not_(0), True)
+        self.assertEqual(not_(""), True)
+        
+        # Test now returns reasonable timestamp
+        timestamp = now()
+        self.assertIsInstance(timestamp, int)
+        self.assertGreater(timestamp, 1600000000000)  # After 2020
+        
+        # Test number with invalid input
+        self.assertEqual(number("invalid"), None)
+        self.assertEqual(number(""), None)
+        self.assertEqual(number(None), None)
+
+    def test_dot_operator_in_constraint_with_numbers(self):
+        """Test dot operator in constraints with numeric fields"""
+        tpl = self.tpl.copy()
+
+        tpl["survey"] = [
+            {
+                "type": "integer",
+                "name": "num_field",
+                "label": "Number field (must be > 5)",
+                "survey123py::preview_input": 8,
+                "constraint": ". > 5",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][0]["constraint_result"], True, 
+                        msg="Constraint with dot operator: 8 > 5 should be True")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_dot_operator_in_constraint_with_strings(self):
+        """Test dot operator in constraints with string fields"""
+        tpl = self.tpl.copy()
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "text_field",
+                "label": "Text field",
+                "survey123py::preview_input": "hello",
+                "constraint": "string_length(.) >= 3",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][0]["constraint_result"], True, 
+                        msg="String constraint with dot operator: length of 'hello' >= 3 should be True")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_dot_operator_constraint_false_condition(self):
+        """Test dot operator in constraints that evaluate to false"""
+        tpl = self.tpl.copy()
+
+        tpl["survey"] = [
+            {
+                "type": "integer",
+                "name": "num_field",
+                "label": "Number field (must be < 10)",
+                "survey123py::preview_input": 15,
+                "constraint": ". < 10",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][0]["constraint_result"], False, 
+                        msg="Constraint with dot operator: 15 < 10 should be False")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_dot_operator_with_decimals_in_constraint(self):
+        """Test that dot operator doesn't interfere with decimal numbers in constraints"""
+        tpl = self.tpl.copy()
+
+        tpl["survey"] = [
+            {
+                "type": "decimal",
+                "name": "decimal_field",
+                "label": "Decimal field",
+                "survey123py::preview_input": 7.5,
+                "constraint": ". >= 2.5 and . <= 10.0",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        # Should be: 7.5 >= 2.5 and 7.5 <= 10.0 = True
+        self.assertEqual(results["survey"][0]["constraint_result"], True, 
+                        msg="Constraint with decimals: 7.5 >= 2.5 and 7.5 <= 10.0 should be True")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_dot_operator_constraint_with_mixed_expressions(self):
+        """Test dot operator in constraints with mixed expressions including variables"""
+        tpl = self.tpl.copy()
+
+        tpl["survey"] = [
+            {
+                "type": "integer",
+                "name": "min_value",
+                "label": "Minimum value",
+                "survey123py::preview_input": 5
+            },
+            {
+                "type": "integer",
+                "name": "current_field",
+                "label": "Current field",
+                "survey123py::preview_input": 10,
+                "constraint": ". >= ${min_value}",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        # Should be: 10 >= 5 = True
+        self.assertEqual(results["survey"][1]["constraint_result"], True, 
+                        msg="Mixed constraint expression: 10 >= 5 should be True")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+

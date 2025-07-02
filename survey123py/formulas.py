@@ -521,3 +521,113 @@ def decimal_date_time(timestamp) -> float:
         return delta.total_seconds() / (24 * 60 * 60)  # Convert to days
     except (ValueError, TypeError):
         raise ValueError(f"Value '{timestamp}' is not a valid timestamp")
+
+def false() -> bool:
+    """
+    Returns the boolean value false.
+    
+    Example:
+
+    `false()`
+    """
+    return False
+
+def join(separator: str, *args) -> str:
+    """
+    Joins multiple values with the specified separator.
+    Only non-empty values are included in the result.
+    
+    Example:
+
+    `join(' - ', ${field1}, ${field2}, ${field3})`
+    """
+    # Filter out None and empty string values
+    valid_args = [str(arg) for arg in args if arg is not None and arg != ""]
+    return str(separator).join(valid_args)
+
+def max(*args):
+    """
+    Returns the maximum value from the arguments.
+    Only considers numeric values.
+    
+    Example:
+
+    `max(${field1}, ${field2}, ${field3})`
+    """
+    numeric_args = []
+    for arg in args:
+        if arg is not None and arg != "":
+            try:
+                numeric_args.append(float(arg))
+            except (ValueError, TypeError):
+                pass  # Skip non-numeric values
+    
+    if not numeric_args:
+        return None
+    
+    return builtins.max(numeric_args)
+
+def min(*args):
+    """
+    Returns the minimum value from the arguments.
+    Only considers numeric values.
+    
+    Example:
+
+    `min(${field1}, ${field2}, ${field3})`
+    """
+    numeric_args = []
+    for arg in args:
+        if arg is not None and arg != "":
+            try:
+                numeric_args.append(float(arg))
+            except (ValueError, TypeError):
+                pass  # Skip non-numeric values
+    
+    if not numeric_args:
+        return None
+    
+    return builtins.min(numeric_args)
+
+def not_(value) -> bool:
+    """
+    Returns the logical NOT of the value.
+    Note: Function name uses underscore to avoid conflict with Python's 'not' keyword.
+    
+    Example:
+
+    `not(${boolean_field})`
+    """
+    # Convert to boolean first, then negate
+    return not boolean(value)
+
+def now() -> int:
+    """
+    Returns the current date and time as a timestamp in milliseconds.
+    
+    Example:
+
+    `now()`
+    """
+    return int(datetime.now().timestamp() * 1000)
+
+def number(value) -> float:
+    """
+    Converts the value to a number (float).
+    Returns None for values that cannot be converted.
+    
+    Example:
+
+    `number(${text_field})`
+    """
+    if value is None or value == "":
+        return None
+    
+    # Strip quotes if present
+    if isinstance(value, str) and value.startswith("'") and value.endswith("'"):
+        value = value[1:-1]
+    
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None

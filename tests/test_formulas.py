@@ -710,3 +710,257 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         # Cleanup
         os.remove(self.test_tmp_file)
 
+    def test_tan(self):
+        tpl = self.tpl.copy()
+        input_value = 0.785398  # π/4 radians
+
+        tpl["survey"] = generate_test_survey("tan", input_value)
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 1.0000003465725653, 5, msg="tan calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_exp(self):
+        tpl = self.tpl.copy()
+        input_value = 2.0
+
+        tpl["survey"] = generate_test_survey("exp", input_value)
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 7.38905609893065, 5, msg="exp calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_exp10(self):
+        tpl = self.tpl.copy()
+        input_value = 3.0
+
+        tpl["survey"] = generate_test_survey("exp10", input_value)
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 1000.0, 5, msg="exp10 calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_log(self):
+        tpl = self.tpl.copy()
+        input_value = 2.71828  # approximately e
+
+        tpl["survey"] = generate_test_survey("log", input_value)
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 0.9999986932206651, 5, msg="log calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_log10(self):
+        tpl = self.tpl.copy()
+        input_value = 1000.0
+
+        tpl["survey"] = generate_test_survey("log10", input_value)
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 3.0, 5, msg="log10 calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_log_error_handling(self):
+        """Test that log functions raise ValueError for non-positive values"""
+        from survey123py.formulas import log, log10
+        
+        with self.assertRaises(ValueError):
+            log(0)
+        
+        with self.assertRaises(ValueError):
+            log(-1)
+            
+        with self.assertRaises(ValueError):
+            log10(0)
+            
+        with self.assertRaises(ValueError):
+            log10(-1)
+
+    def test_pi(self):
+        tpl = self.tpl.copy()
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Pi Calculation",
+                "calculation": "pi()",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Pi value is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][0]["calculation"], 3.141592653589793, 5, msg="pi calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_pow(self):
+        tpl = self.tpl.copy()
+        val1 = 2.0
+        val2 = 3.0
+
+        tpl["survey"] = [
+            {
+                "type": "decimal",
+                "name": "q1",
+                "label": "Base value",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "decimal", 
+                "name": "q2",
+                "label": "Exponent value",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Power Calculation",
+                "calculation": "pow(${q1}, ${q2})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Power result is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][2]["calculation"], 8.0, 5, msg="pow calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_round(self):
+        tpl = self.tpl.copy()
+        input_value = 3.14159
+
+        tpl["survey"] = generate_test_survey("round", input_value)
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][1]["calculation"], 3.0, msg="round calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_round_with_digits(self):
+        tpl = self.tpl.copy()
+        val1 = 3.14159
+        val2 = 2
+
+        tpl["survey"] = [
+            {
+                "type": "decimal",
+                "name": "q1",
+                "label": "Value to round",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "integer",
+                "name": "q2",
+                "label": "Number of digits",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Round Calculation",
+                "calculation": "round(${q1}, ${q2})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Rounded result is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][2]["calculation"], 3.14, msg="round with digits calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_sqrt(self):
+        tpl = self.tpl.copy()
+        input_value = 16.0
+
+        tpl["survey"] = generate_test_survey("sqrt", input_value)
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertAlmostEqual(results["survey"][1]["calculation"], 4.0, 5, msg="sqrt calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_sqrt_error_handling(self):
+        """Test that sqrt raises ValueError for negative values"""
+        from survey123py.formulas import sqrt
+        
+        with self.assertRaises(ValueError):
+            sqrt(-1)
+

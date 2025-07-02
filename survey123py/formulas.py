@@ -2,6 +2,7 @@
 # For full documentation, see: https://doc.arcgis.com/en/survey123/desktop/create-surveys/xlsformformulas.htm
 from datetime import datetime
 import math
+import builtins
 
 def if_(statement, a, b) -> bool:
     """
@@ -228,3 +229,114 @@ def atan2(y: float, x: float) -> float:
     y = float(y)
     x = float(x)
     return math.atan2(y, x)
+
+def tan(value: float) -> float:
+    """
+    Returns the tangent of the value in radians.
+
+    Example:
+
+    `tan(${question_one})`
+    """
+    value = float(value)
+    return math.tan(value)
+
+def exp(value: float) -> float:
+    """
+    Returns e raised to the power of the value.
+
+    Example:
+
+    `exp(${question_one})`
+    """
+    value = float(value)
+    return math.exp(value)
+
+def exp10(value: float) -> float:
+    """
+    Returns 10 raised to the power of the value.
+
+    Example:
+
+    `exp10(${question_one})`
+    """
+    value = float(value)
+    return math.pow(10, value)
+
+def log(value: float) -> float:
+    """
+    Returns the natural logarithm of the value.
+    Value must be positive.
+
+    Example:
+
+    `log(${question_one})`
+    """
+    value = float(value)
+    if value <= 0:
+        raise ValueError("Value must be positive")
+    return math.log(value)
+
+def log10(value: float) -> float:
+    """
+    Returns the base-10 logarithm of the value.
+    Value must be positive.
+
+    Example:
+
+    `log10(${question_one})`
+    """
+    value = float(value)
+    if value <= 0:
+        raise ValueError("Value must be positive")
+    return math.log10(value)
+
+def pi() -> float:
+    """
+    Returns the mathematical constant π (pi).
+
+    Example:
+
+    `pi()`
+    """
+    return math.pi
+
+def pow(base: float, exponent: float) -> float:
+    """
+    Returns base raised to the power of exponent.
+
+    Example:
+
+    `pow(${question_one}, ${question_two})`
+    """
+    base = float(base)
+    exponent = float(exponent)
+    return math.pow(base, exponent)
+
+def round(value: float, ndigits: int = 0) -> float:
+    """
+    Returns the value rounded to the given number of digits after the decimal point.
+    If ndigits is omitted or is None, it returns the nearest integer.
+
+    Example:
+
+    `round(${question_one}, 2)`
+    """
+    value = float(value)
+    if ndigits == 0:
+        return float(builtins.round(value))
+    return builtins.round(value, ndigits)
+
+def sqrt(value: float) -> float:
+    """
+    Returns the square root of the value.
+    Value must be non-negative.
+
+    Example:
+
+    `sqrt(${question_one})`
+    """
+    value = float(value)
+    if value < 0:
+        raise ValueError("Value must be non-negative")
+    return math.sqrt(value)

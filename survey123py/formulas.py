@@ -340,3 +340,45 @@ def sqrt(value: float) -> float:
     if value < 0:
         raise ValueError("Value must be non-negative")
     return math.sqrt(value)
+
+def selected(multi_select_answer: str, choice_value: str) -> bool:
+    """
+    Returns true if the choice_value is selected in the multi-select answer.
+    The multi_select_answer should be a comma-separated string of selected values.
+
+    Example:
+
+    `selected(${multi_select_question}, 'option1')`
+    """
+    if not multi_select_answer or not choice_value:
+        return False
+    
+    # Convert to string and split by commas to get individual selections
+    selections = str(multi_select_answer).split(',')
+    # Strip whitespace from each selection
+    selections = [sel.strip() for sel in selections]
+    return str(choice_value) in selections
+
+def selected_at(multi_select_answer: str, index: int) -> str:
+    """
+    Returns the choice value at the specified index (0-based) in the multi-select answer.
+    Returns empty string if index is out of bounds.
+    The multi_select_answer should be a comma-separated string of selected values.
+
+    Example:
+
+    `selected-at(${multi_select_question}, 0)`
+    """
+    if not multi_select_answer:
+        return ""
+    
+    # Convert to string and split by commas to get individual selections
+    selections = str(multi_select_answer).split(',')
+    # Strip whitespace from each selection
+    selections = [sel.strip() for sel in selections]
+    
+    # Check if index is valid
+    if index < 0 or index >= len(selections):
+        return ""
+    
+    return selections[index]

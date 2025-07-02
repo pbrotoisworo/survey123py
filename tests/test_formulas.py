@@ -964,3 +964,215 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         with self.assertRaises(ValueError):
             sqrt(-1)
 
+    def test_selected(self):
+        tpl = self.tpl.copy()
+        val1 = "'option1,option3,option5'"  # Multi-select answer (comma-separated, quoted)
+        val2 = "option3"  # Choice to check
+
+        tpl["choices"] = [
+            {"list_name": "test_options", "name": "option1", "label": "Option 1"},
+            {"list_name": "test_options", "name": "option2", "label": "Option 2"},
+            {"list_name": "test_options", "name": "option3", "label": "Option 3"},
+            {"list_name": "test_options", "name": "option4", "label": "Option 4"},
+            {"list_name": "test_options", "name": "option5", "label": "Option 5"}
+        ]
+
+        tpl["survey"] = [
+            {
+                "type": "select_multiple test_options",
+                "name": "q1",
+                "label": "Multi-select question",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "q2",
+                "label": "Choice to check",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Selected Calculation",
+                "calculation": "selected(${q1}, ${q2})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Selected result is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][2]["calculation"], True, msg="selected calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_selected_false(self):
+        tpl = self.tpl.copy()
+        val1 = "'option1,option3,option5'"  # Multi-select answer (comma-separated, quoted)
+        val2 = "option2"  # Choice to check (not selected)
+
+        tpl["choices"] = [
+            {"list_name": "test_options", "name": "option1", "label": "Option 1"},
+            {"list_name": "test_options", "name": "option2", "label": "Option 2"},
+            {"list_name": "test_options", "name": "option3", "label": "Option 3"},
+            {"list_name": "test_options", "name": "option4", "label": "Option 4"},
+            {"list_name": "test_options", "name": "option5", "label": "Option 5"}
+        ]
+
+        tpl["survey"] = [
+            {
+                "type": "select_multiple test_options",
+                "name": "q1",
+                "label": "Multi-select question",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "q2",
+                "label": "Choice to check",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Selected Calculation",
+                "calculation": "selected(${q1}, ${q2})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Selected result is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][2]["calculation"], False, msg="selected calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_selected_at(self):
+        tpl = self.tpl.copy()
+        val1 = "'option1,option3,option5'"  # Multi-select answer (comma-separated, quoted)
+        val2 = 1  # Index to get
+
+        tpl["choices"] = [
+            {"list_name": "test_options", "name": "option1", "label": "Option 1"},
+            {"list_name": "test_options", "name": "option2", "label": "Option 2"},
+            {"list_name": "test_options", "name": "option3", "label": "Option 3"},
+            {"list_name": "test_options", "name": "option4", "label": "Option 4"},
+            {"list_name": "test_options", "name": "option5", "label": "Option 5"}
+        ]
+
+        tpl["survey"] = [
+            {
+                "type": "select_multiple test_options",
+                "name": "q1",
+                "label": "Multi-select question",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "integer",
+                "name": "q2",
+                "label": "Index to get",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Selected At Calculation",
+                "calculation": "selected_at(${q1}, ${q2})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Selected at result is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][2]["calculation"], "option3", msg="selected_at calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_selected_at_out_of_bounds(self):
+        tpl = self.tpl.copy()
+        val1 = "'option1,option3'"  # Multi-select answer with 2 items (comma-separated, quoted)
+        val2 = 5  # Index out of bounds
+
+        tpl["choices"] = [
+            {"list_name": "test_options", "name": "option1", "label": "Option 1"},
+            {"list_name": "test_options", "name": "option2", "label": "Option 2"},
+            {"list_name": "test_options", "name": "option3", "label": "Option 3"}
+        ]
+
+        tpl["survey"] = [
+            {
+                "type": "select_multiple test_options",
+                "name": "q1",
+                "label": "Multi-select question",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "integer",
+                "name": "q2",
+                "label": "Index to get",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Selected At Calculation",
+                "calculation": "selected_at(${q1}, ${q2})",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Selected at result is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][2]["calculation"], "", msg="selected_at out of bounds calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_selected_empty_inputs(self):
+        """Test selected functions with empty inputs"""
+        from survey123py.formulas import selected, selected_at
+        
+        # Test selected with empty inputs
+        self.assertEqual(selected("", "option1"), False)
+        self.assertEqual(selected("option1,option2", ""), False)
+        self.assertEqual(selected("", ""), False)
+        
+        # Test selected_at with empty inputs
+        self.assertEqual(selected_at("", 0), "")
+        self.assertEqual(selected_at("option1,option2", -1), "")
+        self.assertEqual(selected_at("option1,option2", 10), "")
+

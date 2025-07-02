@@ -22,7 +22,7 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         output_yaml = self.preview.show_preview()
         self.assertEqual(output_yaml["survey"][2]["label"], "Personal Data (John Doe)", "Label not parsed correctly")
         self.assertEqual(output_yaml["survey"][2]["children"][0]["label"], "Nationality of John Doe. Age 30", "Label not parsed correctly")
-        self.assertEqual(output_yaml["survey"][3]["label"], "The answers are John Doe and 30", "Label not parsed correctly")
+        self.assertEqual(output_yaml["survey"][3]["label"], "The answers are John Doe and 30", "Label not parsed correctly")      
 
     def test_invalid_parsing(self):
         # Test parsing an invalid survey file

@@ -1,0 +1,18 @@
+settings:
+  form_title: Test Form
+survey:
+- label: What is your favorite fruit?
+  name: q1
+  survey123py::preview_input: Apple
+  type: text
+- label: What is your favorite color?
+  name: q2
+  survey123py::preview_input: Red
+  type: text
+- calculation: concat(${q1}, ' and ', ${q2})
+  label: Concat Calculation
+  name: outputCalculation
+  type: text
+- label: 'Concat Output is: ${outputCalculation}'
+  name: output
+  type: note

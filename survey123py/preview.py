@@ -96,6 +96,12 @@ class FormPreviewer:
                 ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("boolean-from-string(", "boolean_from_string(")
             if "jr:choice-name(" in ctx[item["name"]]["value"]:
                 ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("jr:choice-name(", "jr_choice_name(")
+            if "count-selected(" in ctx[item["name"]]["value"]:
+                ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("count-selected(", "count_selected(")
+            if "decimal-date-time(" in ctx[item["name"]]["value"]:
+                ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("decimal-date-time(", "decimal_date_time(")
+            if "date-time(" in ctx[item["name"]]["value"]:
+                ctx[item["name"]]["value"] = ctx[item["name"]]["value"].replace("date-time(", "date_time(")
             ctx[item["name"]]["value"] = eval(ctx[item["name"]]["value"])
             if ctx[item["name"]]["type"] == "text" and not isinstance(ctx[item["name"]]["value"], bool):
                 # Need to escape quotes in the string so it can be used by eval() properly
@@ -177,6 +183,12 @@ class FormPreviewer:
                         value = value.replace("boolean-from-string(", "boolean_from_string(")
                     if "jr:choice-name(" in value:
                         value = value.replace("jr:choice-name(", "jr_choice_name(")
+                    if "count-selected(" in value:
+                        value = value.replace("count-selected(", "count_selected(")
+                    if "decimal-date-time(" in value:
+                        value = value.replace("decimal-date-time(", "decimal_date_time(")
+                    if "date-time(" in value:
+                        value = value.replace("date-time(", "date_time(")
                     survey_data["survey"][i][key] = eval(value)
 
         return survey_data

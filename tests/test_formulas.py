@@ -1238,3 +1238,269 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         # Test with valid choice value
         self.assertEqual(jr_choice_name("option1", "test_list"), "option1")
 
+    def test_boolean(self):
+        tpl = self.tpl.copy()
+        
+        test_cases = [
+            (1, True),
+            (0, False),
+            ("true", True),
+            ("false", False),
+            ("yes", True),
+            ("no", False),
+            ("", False)
+        ]
+        
+        for i, (input_val, expected) in enumerate(test_cases):
+            tpl["survey"] = [
+                {
+                    "type": "text",
+                    "name": "q1",
+                    "label": f"Test input {i}",
+                    "survey123py::preview_input": input_val
+                },
+                {
+                    "type": "text",
+                    "name": "outputCalculation",
+                    "label": "Boolean Calculation",
+                    "calculation": "boolean(${q1})",
+                },
+            ]
+
+            with open(self.test_tmp_file, 'w') as file:
+                yaml.dump(tpl, file)
+            
+            preview = FormPreviewer(str(self.test_tmp_file))
+            results = preview.show_preview()
+            
+            self.assertEqual(results["survey"][1]["calculation"], expected, 
+                           msg=f"boolean({input_val}) should return {expected}")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_coalesce(self):
+        tpl = self.tpl.copy()
+        val1 = ""  # Empty value
+        val2 = "backup_value"  # Non-empty backup
+        val3 = "default"  # Default value
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Primary value",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "q2",
+                "label": "Backup value",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "q3",
+                "label": "Default value",
+                "survey123py::preview_input": val3
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Coalesce Calculation",
+                "calculation": "coalesce(${q1}, ${q2}, ${q3})",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][3]["calculation"], "backup_value", 
+                        msg="coalesce should return first non-empty value")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_count(self):
+        tpl = self.tpl.copy()
+        val1 = "value1"
+        val2 = ""  # Empty
+        val3 = "value3"
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Field 1",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "q2",
+                "label": "Field 2",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "q3",
+                "label": "Field 3",
+                "survey123py::preview_input": val3
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Count Calculation",
+                "calculation": "count(${q1}, ${q2}, ${q3})",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][3]["calculation"], 2, 
+                        msg="count should return 2 for two non-empty values")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_count_selected(self):
+        tpl = self.tpl.copy()
+        val1 = "'option1,option3,option5'"  # Multi-select with 3 selections
+
+        tpl["choices"] = [
+            {"list_name": "test_options", "name": "option1", "label": "Option 1"},
+            {"list_name": "test_options", "name": "option2", "label": "Option 2"},
+            {"list_name": "test_options", "name": "option3", "label": "Option 3"},
+            {"list_name": "test_options", "name": "option4", "label": "Option 4"},
+            {"list_name": "test_options", "name": "option5", "label": "Option 5"}
+        ]
+
+        tpl["survey"] = [
+            {
+                "type": "select_multiple test_options",
+                "name": "q1",
+                "label": "Multi-select question",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Count Selected Calculation",
+                "calculation": "count-selected(${q1})",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        self.assertEqual(results["survey"][1]["calculation"], 3, 
+                        msg="count-selected should return 3 for three selections")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_date_time(self):
+        tpl = self.tpl.copy()
+        val1 = "'2024-06-14T10:30:00'"  # ISO datetime format
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "DateTime input",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "DateTime Calculation",
+                "calculation": "date-time(${q1})",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        # Should return a timestamp in milliseconds
+        self.assertIsInstance(results["survey"][1]["calculation"], int, 
+                             msg="date-time should return integer timestamp")
+        self.assertGreater(results["survey"][1]["calculation"], 0, 
+                          msg="date-time should return positive timestamp")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_decimal_date_time(self):
+        tpl = self.tpl.copy()
+        val1 = 1718371200000  # Timestamp in milliseconds (June 14, 2024)
+
+        tpl["survey"] = [
+            {
+                "type": "text",
+                "name": "q1",
+                "label": "Timestamp input",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Decimal DateTime Calculation",
+                "calculation": "decimal-date-time(${q1})",
+            },
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        # Should return a decimal number representing days since Excel epoch
+        self.assertIsInstance(results["survey"][1]["calculation"], float, 
+                             msg="decimal-date-time should return float")
+        self.assertGreater(results["survey"][1]["calculation"], 40000, 
+                          msg="decimal-date-time should return reasonable date value")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_new_functions_error_handling(self):
+        """Test error handling for new functions"""
+        from survey123py.formulas import boolean, coalesce, count, count_selected, date_time, decimal_date_time
+        
+        # Test boolean with various inputs
+        self.assertEqual(boolean(None), False)
+        self.assertEqual(boolean(""), False)
+        self.assertEqual(boolean(0), False)
+        self.assertEqual(boolean(1), True)
+        
+        # Test coalesce with all empty values
+        self.assertEqual(coalesce("", None, ""), "")
+        
+        # Test count with all empty values
+        self.assertEqual(count("", None, ""), 0)
+        
+        # Test count_selected with empty input
+        self.assertEqual(count_selected(""), 0)
+        self.assertEqual(count_selected(None), 0)
+        
+        # Test date_time with invalid format
+        with self.assertRaises(ValueError):
+            date_time("invalid-date")
+        
+        # Test decimal_date_time with invalid input
+        with self.assertRaises(ValueError):
+            decimal_date_time("invalid")
+

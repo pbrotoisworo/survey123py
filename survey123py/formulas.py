@@ -402,3 +402,122 @@ def jr_choice_name(choice_value: str, question_name: str) -> str:
     # 3. Return the corresponding label
     # For now, we return the choice_value as a placeholder
     return str(choice_value) if choice_value else ""
+
+def boolean(value: any) -> bool:
+    """
+    Converts the given value to a boolean.
+    Returns true for non-zero numbers, non-empty strings, and boolean true.
+    Returns false for zero, empty strings, None, and boolean false.
+
+    Example:
+
+    `boolean(${question_one})`
+    """
+    if value is None or value == "":
+        return False
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        return value.lower() not in ['', '0', 'false', 'no']
+    return bool(value)
+
+def coalesce(*args):
+    """
+    Returns the first non-null (non-empty) value from the arguments.
+    
+    Example:
+
+    `coalesce(${optional_field}, ${backup_field}, 'default_value')`
+    """
+    for arg in args:
+        if arg is not None and arg != "":
+            return arg
+    return ""
+
+def count(*args):
+    """
+    Returns the count of non-null (non-empty) values from the arguments.
+    
+    Example:
+
+    `count(${field1}, ${field2}, ${field3})`
+    """
+    count_val = 0
+    for arg in args:
+        if arg is not None and arg != "":
+            count_val += 1
+    return count_val
+
+def count_selected(multi_select_answer: str) -> int:
+    """
+    Returns the number of selected choices in a multi-select answer.
+    The multi_select_answer should be a comma-separated string of selected values.
+
+    Example:
+
+    `count-selected(${multi_select_question})`
+    """
+    if not multi_select_answer:
+        return 0
+    
+    # Convert to string and split by commas to get individual selections
+    selections = str(multi_select_answer).split(',')
+    # Filter out empty selections after stripping whitespace
+    selections = [sel.strip() for sel in selections if sel.strip()]
+    return len(selections)
+
+def date_time(value: str) -> str:
+    """
+    Converts a string to a Survey123 datetime object (unix timestamp in milliseconds).
+    
+    Example:
+
+    `date-time(${datetime_question})`
+    """
+    if value is None or value == '':
+        return None
+    
+    # Strip quotes if present
+    if isinstance(value, str) and value.startswith("'") and value.endswith("'"):
+        value = value[1:-1]
+    
+    try:
+        # Try parsing as ISO format first (YYYY-MM-DDTHH:MM:SS)
+        if 'T' in value:
+            dt = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S')
+        else:
+            # Try parsing as date + time format
+            dt = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        return int(dt.timestamp() * 1000)
+    except ValueError:
+        try:
+            # Fallback to date only
+            dt = datetime.strptime(value, '%Y-%m-%d')
+            return int(dt.timestamp() * 1000)
+        except ValueError:
+            raise ValueError(f"Value '{value}' is not a valid datetime format")
+
+def decimal_date_time(timestamp) -> float:
+    """
+    Converts a timestamp (in milliseconds) to decimal date-time format.
+    This represents the number of days since a reference date.
+    
+    Example:
+
+    `decimal-date-time(${timestamp_field})`
+    """
+    if timestamp is None or timestamp == '':
+        return None
+    
+    try:
+        # Convert milliseconds to seconds and create datetime object
+        dt = datetime.fromtimestamp(int(timestamp) / 1000)
+        # Reference date (Excel epoch: January 1, 1900)
+        # Note: Excel considers 1900 a leap year (it's not), so we use 1899-12-30
+        reference_date = datetime(1899, 12, 30)
+        delta = dt - reference_date
+        return delta.total_seconds() / (24 * 60 * 60)  # Convert to days
+    except (ValueError, TypeError):
+        raise ValueError(f"Value '{timestamp}' is not a valid timestamp")

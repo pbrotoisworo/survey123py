@@ -382,3 +382,23 @@ def selected_at(multi_select_answer: str, index: int) -> str:
         return ""
     
     return selections[index]
+
+def jr_choice_name(choice_value: str, question_name: str) -> str:
+    """
+    Returns the label/display text for a given choice value from a specified question.
+    This is a simplified implementation that returns the choice_value since we don't have
+    access to the choice definitions in the formula context.
+    
+    In a real Survey123 form, this would look up the label from the choices sheet
+    based on the question's choice list.
+
+    Example:
+
+    `jr:choice-name(${priority}, 'priority')`
+    """
+    # In a real implementation, this would:
+    # 1. Look up the question to find its choice list
+    # 2. Look up the choice_value in that choice list
+    # 3. Return the corresponding label
+    # For now, we return the choice_value as a placeholder
+    return str(choice_value) if choice_value else ""

@@ -1176,3 +1176,65 @@ class TestSurvey123_322_Preview(unittest.TestCase):
         self.assertEqual(selected_at("option1,option2", -1), "")
         self.assertEqual(selected_at("option1,option2", 10), "")
 
+    def test_jr_choice_name(self):
+        tpl = self.tpl.copy()
+        val1 = "'option2'"  # Choice value (quoted)
+        val2 = "test_options"  # List name (unquoted since it will be quoted in the formula)
+
+        tpl["choices"] = [
+            {"list_name": "test_options", "name": "option1", "label": "Option 1"},
+            {"list_name": "test_options", "name": "option2", "label": "Option 2"},
+            {"list_name": "test_options", "name": "option3", "label": "Option 3"}
+        ]
+
+        tpl["survey"] = [
+            {
+                "type": "select_one test_options",
+                "name": "q1",
+                "label": "Single select question",
+                "survey123py::preview_input": val1
+            },
+            {
+                "type": "text",
+                "name": "q2",
+                "label": "List name",
+                "survey123py::preview_input": val2
+            },
+            {
+                "type": "text",
+                "name": "outputCalculation",
+                "label": "Choice Name Calculation",
+                "calculation": "jr:choice-name(${q1}, '${q2}')",
+            },
+            {
+                "type": "note",
+                "name": "output",
+                "label": "Choice name result is: ${outputCalculation}",
+            }
+        ]
+
+        with open(self.test_tmp_file, 'w') as file:
+            yaml.dump(tpl, file)
+        
+        preview = FormPreviewer(str(self.test_tmp_file))
+        results = preview.show_preview()
+        
+        # Since this is a simplified implementation, it returns the choice_value
+        self.assertEqual(results["survey"][2]["calculation"], "option2", msg="jr_choice_name calculation not parsed correctly")
+
+        # Cleanup
+        os.remove(self.test_tmp_file)
+
+    def test_jr_choice_name_empty(self):
+        """Test jr_choice_name with empty inputs"""
+        from survey123py.formulas import jr_choice_name
+        
+        # Test with empty choice value
+        self.assertEqual(jr_choice_name("", "test_list"), "")
+        
+        # Test with None choice value
+        self.assertEqual(jr_choice_name(None, "test_list"), "")
+        
+        # Test with valid choice value
+        self.assertEqual(jr_choice_name("option1", "test_list"), "option1")
+

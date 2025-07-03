@@ -38,14 +38,6 @@ Create a YAML file with your survey definition and convert it to Excel:
 
    python main.py -v 3.22 --input sample_survey.yaml --output custom_output.xlsx
 
-API Reference
-=============
-
-.. toctree::
-   :maxdepth: 2
-
-   api
-
 Indices and tables
 ==================
 

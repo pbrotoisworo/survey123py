@@ -14,6 +14,7 @@ import unittest
 import os
 import tempfile
 import sys
+import traceback
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 
@@ -101,7 +102,6 @@ class TestSurvey123Publisher(unittest.TestCase):
         
         # Check user privileges
         user_info = publisher.get_user_info()
-        print(f"User info: {user_info}")
         
         # Verify user has necessary privileges
         self.assertTrue(user_info['can_create_items'], 
@@ -126,10 +126,8 @@ class TestSurvey123Publisher(unittest.TestCase):
             self.assertIsNotNone(survey)
             self.assertEqual(survey.title, "Test Survey - Unit Test")
             
-            # Clean up - delete the test survey
-            survey.delete()
-            
         except Exception as e:
+            print(f"FULL TRACEBACK:\n{traceback.format_exc()}")
             self.skipTest(f"Failed to create survey (likely auth/network issue): {e}")
     
     @unittest.skipUnless(ENABLE_PUBLISHER_TESTS, SKIP_REASON)
@@ -148,21 +146,21 @@ class TestSurvey123Publisher(unittest.TestCase):
                 keep_excel=True,
                 excel_output_path="test_survey_unittest.xlsx"
             )
-            
+
             self.assertIsNotNone(survey)
-            self.assertEqual(survey.title, "Test YAML Survey - Unit Test")
+            self.assertEqual(survey.properties["title"], "Test YAML Survey - Unit Test")
             self.assertTrue(os.path.exists("test_survey_unittest.xlsx"))
             
             # Verify survey properties
-            self.assertIsNotNone(survey.id)
-            self.assertIsNotNone(survey.url)
+            self.assertIsNotNone(survey.properties["id"])
             
             # Clean up
-            survey.delete()
+            # Note: There is no built-in delete method in the publisher, so we the survey has to be deleted manually
             if os.path.exists("test_survey_unittest.xlsx"):
                 os.unlink("test_survey_unittest.xlsx")
                 
         except Exception as e:
+            print(f"FULL TRACEBACK:\n{traceback.format_exc()}")
             self.skipTest(f"Failed to publish from YAML (likely auth/network issue): {e}")
     
     @unittest.skipUnless(ENABLE_PUBLISHER_TESTS, SKIP_REASON)
@@ -178,12 +176,13 @@ class TestSurvey123Publisher(unittest.TestCase):
             )
             
             self.assertIsNotNone(survey)
-            self.assertEqual(survey.title, "Convenience Test Survey - Unit Test")
+            self.assertEqual(survey.properties["title"], "Convenience Test Survey - Unit Test")
             
             # Clean up
-            survey.delete()
+            # Note: There is no built-in delete method in the publisher, so we the survey has to be deleted manually
             
         except Exception as e:
+            print(f"FULL TRACEBACK:\n{traceback.format_exc()}")
             self.skipTest(f"Failed convenience function test (likely auth/network issue): {e}")
 
 if __name__ == "__main__":

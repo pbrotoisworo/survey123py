@@ -235,8 +235,8 @@ class Survey123Publisher:
             
         if info:
             publish_params["info"] = info
-            
-        return survey.publish(**publish_params)
+        response = survey.publish(**publish_params)
+        return response
     
     def publish_from_yaml(self,
                          yaml_path: str,
@@ -336,12 +336,10 @@ class Survey123Publisher:
             raise FileNotFoundError(f"YAML file not found: {yaml_path}")
         
         # Step 1: Convert YAML to Excel using Survey123Py
-        print("DEBUG1")
         form_data = FormData(version)
         form_data.load_yaml(yaml_path)
         
         # Determine Excel output path
-        print("DEBUG1")
         if keep_excel and excel_output_path:
             excel_path = excel_output_path
         elif keep_excel:
@@ -353,9 +351,6 @@ class Survey123Publisher:
             temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
             excel_path = temp_file.name
             temp_file.close()
-
-        print("DEBUG: Saving Excel file to", excel_path)
-        print("DEBUG: File exists:", os.path.exists(excel_path))
         
         try:
             # Save Excel file

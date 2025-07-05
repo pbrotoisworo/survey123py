@@ -38,6 +38,8 @@ python main.py -v 3.22 --input sample_survey.yaml --output custom_output.xlsx
 ```
 
 ## YAML File
+
+Below is a sample. For a more in-depth guide please check the [YAML Construction Guide](https://survey123py.readthedocs.io/en/latest/yaml-guide.html) in the documentation.
 ```yaml
 settings:
   form_title: Asset Inspection

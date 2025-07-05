@@ -149,14 +149,6 @@ Update an existing survey:
 - ``--scripts-folder``: Path to JavaScript files
 - ``--no-schema-changes``: Don't allow schema changes
 
-List Surveys
-~~~~~~~~~~~~
-
-List all surveys in your organization:
-
-.. code-block:: bash
-
-    python main.py list
 
 Python API
 -----------
@@ -227,11 +219,6 @@ Survey Management
     from survey123py.publisher import Survey123Publisher
     
     publisher = Survey123Publisher()
-    
-    # List all surveys
-    surveys = publisher.list_surveys()
-    for survey in surveys:
-        print(f"{survey.title}: {survey.id}")
     
     # Get specific survey
     survey = publisher.get_survey("survey_id_here")

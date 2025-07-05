@@ -43,8 +43,6 @@ def main():
     update_parser.add_argument("--scripts-folder", type=str, help="Path to folder containing JavaScript files.")
     update_parser.add_argument("--no-schema-changes", action="store_true", help="Don't allow schema changes.")
     
-    # List command
-    list_parser = subparsers.add_parser('list', help='List all surveys')
     
     # If no command specified, show help
     if len(sys.argv) == 1:
@@ -60,8 +58,6 @@ def main():
         publish_survey(args)
     elif args.command == 'update':
         update_survey(args)
-    elif args.command == 'list':
-        list_surveys(args)
 
 def generate_excel(args):
     """Generate Excel file from YAML."""
@@ -148,35 +144,6 @@ def update_survey(args):
         print(f"Error: {e}")
         sys.exit(1)
 
-def list_surveys(args):
-    """List all surveys."""
-    try:
-        from survey123py.publisher import Survey123Publisher
-        
-        publisher = Survey123Publisher()
-        surveys = publisher.list_surveys()
-        
-        if not surveys:
-            print("No surveys found.")
-            return
-        
-        print(f"Found {len(surveys)} surveys:")
-        print("-" * 80)
-        for survey in surveys:
-            print(f"ID: {survey.id}")
-            print(f"Title: {survey.title}")
-            print(f"Created: {survey.created}")
-            print(f"Modified: {survey.modified}")
-            print(f"URL: {survey.url}")
-            print("-" * 80)
-            
-    except ImportError:
-        print("Error: ArcGIS Python API is required for list functionality.")
-        print("Install with: pip install arcgis")
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error: {e}")
-        sys.exit(1)
 
 if __name__ == "__main__":
     main()

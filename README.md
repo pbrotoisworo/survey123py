@@ -65,11 +65,6 @@ python main.py publish -i survey.yaml -t "My Survey" --tags demo test
 python main.py update -s SURVEY_ID -i updated_survey.yaml
 ```
 
-**List all surveys:**
-```bash
-python main.py list
-```
-
 > **Note:** Publishing functionality requires the ArcGIS Python API: `pip install arcgis`
 
 ## YAML File

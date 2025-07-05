@@ -8,8 +8,6 @@ This package aims to enhance the developer experience by adding custom modules s
 
 In it's current form it is able to validate and parse formulas and variables the form. However, not all validation and parsing is included yet.
 
-**Note**: Survey123Py does not publish your form. You’ll still need to use Survey123 Connect to publish the final version.
-
 ## Installation
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install Survey123Py.
@@ -20,7 +18,11 @@ pip install git+https://github.com/pbrotoisworo/survey123py.git
 
 ## Usage
 
-### Python
+Survey123Py offers three ways to work with Survey123 forms:
+
+### 1. Generate Excel Files (Python API)
+Convert YAML to Survey123-compatible Excel files:
+
 ```python
 from survey123py.form import FormData
 
@@ -29,13 +31,44 @@ survey.load_survey("Survey123FormConfig.yaml")
 survey.save_survey("output.xlsx")
 ```
 
-### CLI Usage
+### 2. Direct Publishing (Python API)
+Publish surveys directly to ArcGIS Online/Enterprise:
 
-You can also use the CLI tool to generate Survey123 forms directly from the command line.
+```python
+from survey123py.publisher import publish_survey
 
-```bash
-python main.py -v 3.22 --input sample_survey.yaml --output custom_output.xlsx
+# Quick publish
+survey = publish_survey(
+    yaml_path="survey.yaml",
+    title="Customer Survey",
+    tags=["feedback", "customer"]
+)
+print(f"Published! URL: {survey.url}")
 ```
+
+### 3. Command Line Interface
+
+**Generate Excel only:**
+```bash
+python main.py generate -i survey.yaml -o output.xlsx -v 3.22
+```
+
+**Publish directly to ArcGIS:**
+```bash
+python main.py publish -i survey.yaml -t "My Survey" --tags demo test
+```
+
+**Update existing survey:**
+```bash
+python main.py update -s SURVEY_ID -i updated_survey.yaml
+```
+
+**List all surveys:**
+```bash
+python main.py list
+```
+
+> **Note:** Publishing functionality requires the ArcGIS Python API: `pip install arcgis`
 
 ## YAML File
 

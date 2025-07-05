@@ -471,17 +471,6 @@ class Survey123Publisher:
                 info=info
             )
     
-    def list_surveys(self) -> List[Survey]:
-        """
-        List all Survey123 forms in the current user's content.
-        
-        Returns
-        -------
-        list of Survey
-            List of Survey objects
-        """
-        return self.survey_manager.surveys
-    
     def get_survey(self, survey_id: str) -> Survey:
         """
         Get a specific Survey123 form by ID.

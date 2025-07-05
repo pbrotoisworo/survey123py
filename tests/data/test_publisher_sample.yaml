@@ -1,0 +1,27 @@
+settings:
+  form_title: "Test Survey"
+  instance_name: "test_survey_${name}"
+
+choices:
+  - list_name: yes_no
+    name: yes
+    label: "Yes"
+  - list_name: yes_no
+    name: no
+    label: "No"
+
+survey:
+  - type: text
+    name: name
+    label: "What is your name?"
+    required: yes
+    survey123py::preview_input: "Test User"
+  - type: select_one yes_no
+    name: satisfied
+    label: "Are you satisfied?"
+    required: yes
+    survey123py::preview_input: "yes"
+  - type: text
+    name: comments
+    label: "Additional comments"
+    hint: "Optional feedback"

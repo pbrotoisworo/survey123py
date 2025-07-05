@@ -10,6 +10,7 @@ Survey123Py is a Python library that converts YAML survey definitions into Surve
    installation
    quickstart
    yaml-guide
+   publishing
    api
 
 Features

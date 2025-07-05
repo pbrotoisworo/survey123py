@@ -1,6 +1,6 @@
 # All formulas available in Survey123 are implemented here.
 # For full documentation, see: https://doc.arcgis.com/en/survey123/desktop/create-surveys/xlsformformulas.htm
-from datetime import datetime
+from datetime import datetime, timezone
 import math
 import builtins
 import uuid
@@ -68,7 +68,7 @@ def date(value: str) -> str:
     if value is None or value == '':
         return None  # Return None for empty values to keep the question empty
     try:
-        outval = datetime.strptime(value, '%Y-%m-%d').timestamp() * 1000
+        outval = datetime.strptime(value, '%Y-%m-%d').replace(tzinfo=timezone.utc).timestamp() * 1000
         return int(outval)
     except ValueError:
         raise ValueError(f"Value '{value}' is unsupported. The value must be a valid date in 'YYYY-MM-DD' format.")

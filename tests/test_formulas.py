@@ -208,7 +208,7 @@ class TestSurvey123_322_Preview(unittest.TestCase):
     def test_date(self):
         tpl = self.tpl.copy()
         val1 = "2017-05-28"
-        val1_ts = 1495900800000
+        val1_ts = 1495929600000
 
         tpl["survey"] = [
             {

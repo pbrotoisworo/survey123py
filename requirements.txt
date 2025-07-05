@@ -1,1 +1,5 @@
 openpyxl
+arcgis
+arcgis-mapping
+PyYAML
+pyxform

@@ -122,7 +122,6 @@ class FormData:
             self.yaml_data = survey_data
 
         # Validate
-
         with open(self._template_paths[self.form_version]["columns"]) as f:
             template_cols = json.load(f)
 
@@ -173,6 +172,10 @@ class FormData:
             survey_data_processed.append(field)
     
         df_input = pd.DataFrame(survey_data_processed)
+        if "readonly" not in df_input.columns:
+            df_input["readonly"] = ""
+        if "required" not in df_input.columns:
+            df_input["required"] = ""
         df_input["readonly"] = df_input["readonly"].map({True: "yes"})
         df_input["required"] = df_input["required"].map({True: "yes"})
         

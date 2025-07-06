@@ -10,6 +10,7 @@ Survey123Py is a Python library that converts YAML survey definitions into Surve
    installation
    quickstart
    yaml-guide
+   converter
    testing-previewing
    publishing
    api
@@ -18,6 +19,7 @@ Features
 --------
 
 * Convert YAML survey definitions to Survey123-compatible Excel files
+* **Convert existing Excel files back to YAML format** for editing and version control
 * Direct publishing to ArcGIS Online/Enterprise
 * Simplified form creation workflow with YAML
 * Support for Survey123 version 3.22

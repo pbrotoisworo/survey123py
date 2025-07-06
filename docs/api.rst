@@ -10,6 +10,12 @@ FormData
 .. automodule:: survey123py.form
    :members:
 
+ExcelToYamlConverter
+~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: survey123py.converter
+   :members:
+
 FormPreviewer
 ~~~~~~~~~~~~~
 

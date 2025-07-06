@@ -198,7 +198,7 @@ class TestCLIAuthentication(unittest.TestCase):
         except ImportError as e:
             self.fail(f"Failed to import CLI authentication functions: {e}")
     
-    @patch('main.GIS')
+    @patch('arcgis.gis.GIS')
     def test_create_gis_connection_default(self, mock_gis):
         """Test creating GIS connection with default authentication."""
         from main import create_gis_connection
@@ -223,7 +223,7 @@ class TestCLIAuthentication(unittest.TestCase):
         mock_gis.assert_called_once_with("home")
         self.assertEqual(result, mock_gis_instance)
     
-    @patch('main.GIS')
+    @patch('arcgis.gis.GIS')
     def test_create_gis_connection_username_password(self, mock_gis):
         """Test creating GIS connection with username/password."""
         from main import create_gis_connection
@@ -251,7 +251,7 @@ class TestCLIAuthentication(unittest.TestCase):
         )
         self.assertEqual(result, mock_gis_instance)
     
-    @patch('main.GIS')
+    @patch('arcgis.gis.GIS')
     def test_create_gis_connection_token(self, mock_gis):
         """Test creating GIS connection with token."""
         from main import create_gis_connection
@@ -278,7 +278,7 @@ class TestCLIAuthentication(unittest.TestCase):
         )
         self.assertEqual(result, mock_gis_instance)
     
-    @patch('main.GIS')
+    @patch('arcgis.gis.GIS')
     def test_create_gis_connection_pki(self, mock_gis):
         """Test creating GIS connection with PKI certificates."""
         from main import create_gis_connection
@@ -306,8 +306,8 @@ class TestCLIAuthentication(unittest.TestCase):
         )
         self.assertEqual(result, mock_gis_instance)
     
-    @patch('main.getpass.getpass')
-    @patch('main.GIS')
+    @patch('getpass.getpass')
+    @patch('arcgis.gis.GIS')
     def test_create_gis_connection_username_prompt_password(self, mock_gis, mock_getpass):
         """Test creating GIS connection with username and prompted password."""
         from main import create_gis_connection
@@ -340,7 +340,7 @@ class TestCLIAuthentication(unittest.TestCase):
         )
         self.assertEqual(result, mock_gis_instance)
     
-    @patch('main.GIS')
+    @patch('arcgis.gis.GIS')
     def test_create_gis_connection_error_handling(self, mock_gis):
         """Test error handling in GIS connection creation."""
         from main import create_gis_connection

@@ -15,6 +15,7 @@ import os
 import tempfile
 import sys
 import traceback
+import argparse
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 
@@ -184,6 +185,251 @@ class TestSurvey123Publisher(unittest.TestCase):
         except Exception as e:
             print(f"FULL TRACEBACK:\n{traceback.format_exc()}")
             self.skipTest(f"Failed convenience function test (likely auth/network issue): {e}")
+
+
+class TestCLIAuthentication(unittest.TestCase):
+    """Test cases for CLI authentication functionality."""
+    
+    def test_cli_auth_import(self):
+        """Test that CLI authentication functions can be imported."""
+        try:
+            from main import create_gis_connection
+            self.assertTrue(True, "CLI authentication functions imported successfully")
+        except ImportError as e:
+            self.fail(f"Failed to import CLI authentication functions: {e}")
+    
+    @patch('arcgis.gis.GIS')
+    def test_create_gis_connection_default(self, mock_gis):
+        """Test creating GIS connection with default authentication."""
+        from main import create_gis_connection
+        
+        # Create mock args with no authentication parameters
+        args = argparse.Namespace(
+            url=None,
+            username=None,
+            password=None,
+            token=None,
+            cert_file=None,
+            key_file=None
+        )
+        
+        # Mock GIS to return a mock object
+        mock_gis_instance = Mock()
+        mock_gis.return_value = mock_gis_instance
+        
+        result = create_gis_connection(args)
+        
+        # Verify GIS was called with "home"
+        mock_gis.assert_called_once_with("home")
+        self.assertEqual(result, mock_gis_instance)
+    
+    @patch('arcgis.gis.GIS')
+    def test_create_gis_connection_username_password(self, mock_gis):
+        """Test creating GIS connection with username/password."""
+        from main import create_gis_connection
+        
+        # Create mock args with username/password
+        args = argparse.Namespace(
+            url="https://myorg.maps.arcgis.com",
+            username="testuser",
+            password="testpass",
+            token=None,
+            cert_file=None,
+            key_file=None
+        )
+        
+        mock_gis_instance = Mock()
+        mock_gis.return_value = mock_gis_instance
+        
+        result = create_gis_connection(args)
+        
+        # Verify GIS was called with correct parameters
+        mock_gis.assert_called_once_with(
+            url="https://myorg.maps.arcgis.com",
+            username="testuser",
+            password="testpass"
+        )
+        self.assertEqual(result, mock_gis_instance)
+    
+    @patch('arcgis.gis.GIS')
+    def test_create_gis_connection_token(self, mock_gis):
+        """Test creating GIS connection with token."""
+        from main import create_gis_connection
+        
+        # Create mock args with token
+        args = argparse.Namespace(
+            url="https://myorg.maps.arcgis.com",
+            username=None,
+            password=None,
+            token="test_token_123",
+            cert_file=None,
+            key_file=None
+        )
+        
+        mock_gis_instance = Mock()
+        mock_gis.return_value = mock_gis_instance
+        
+        result = create_gis_connection(args)
+        
+        # Verify GIS was called with token
+        mock_gis.assert_called_once_with(
+            url="https://myorg.maps.arcgis.com",
+            token="test_token_123"
+        )
+        self.assertEqual(result, mock_gis_instance)
+    
+    @patch('arcgis.gis.GIS')
+    def test_create_gis_connection_pki(self, mock_gis):
+        """Test creating GIS connection with PKI certificates."""
+        from main import create_gis_connection
+        
+        # Create mock args with PKI
+        args = argparse.Namespace(
+            url="https://myorg.maps.arcgis.com",
+            username=None,
+            password=None,
+            token=None,
+            cert_file="/path/to/cert.pem",
+            key_file="/path/to/key.pem"
+        )
+        
+        mock_gis_instance = Mock()
+        mock_gis.return_value = mock_gis_instance
+        
+        result = create_gis_connection(args)
+        
+        # Verify GIS was called with PKI parameters
+        mock_gis.assert_called_once_with(
+            url="https://myorg.maps.arcgis.com",
+            cert_file="/path/to/cert.pem",
+            key_file="/path/to/key.pem"
+        )
+        self.assertEqual(result, mock_gis_instance)
+    
+    @patch('getpass.getpass')
+    @patch('arcgis.gis.GIS')
+    def test_create_gis_connection_username_prompt_password(self, mock_gis, mock_getpass):
+        """Test creating GIS connection with username and prompted password."""
+        from main import create_gis_connection
+        
+        # Create mock args with username but no password
+        args = argparse.Namespace(
+            url=None,
+            username="testuser",
+            password=None,
+            token=None,
+            cert_file=None,
+            key_file=None
+        )
+        
+        # Mock getpass to return a password
+        mock_getpass.return_value = "prompted_password"
+        mock_gis_instance = Mock()
+        mock_gis.return_value = mock_gis_instance
+        
+        result = create_gis_connection(args)
+        
+        # Verify password was prompted
+        mock_getpass.assert_called_once_with("Password for testuser: ")
+        
+        # Verify GIS was called with correct parameters (default URL for ArcGIS Online)
+        mock_gis.assert_called_once_with(
+            url="https://www.arcgis.com",
+            username="testuser",
+            password="prompted_password"
+        )
+        self.assertEqual(result, mock_gis_instance)
+    
+    @patch('arcgis.gis.GIS')
+    def test_create_gis_connection_error_handling(self, mock_gis):
+        """Test error handling in GIS connection creation."""
+        from main import create_gis_connection
+        
+        # Create mock args
+        args = argparse.Namespace(
+            url="https://invalid.url",
+            username="testuser",
+            password="wrongpass",
+            token=None,
+            cert_file=None,
+            key_file=None
+        )
+        
+        # Mock GIS to raise an exception
+        mock_gis.side_effect = Exception("Authentication failed")
+        
+        with self.assertRaises(RuntimeError) as context:
+            create_gis_connection(args)
+        
+        self.assertIn("Authentication failed", str(context.exception))
+    
+    @patch('argparse.ArgumentParser.parse_args')
+    def test_cli_authentication_parameters_exist(self, mock_parse_args):
+        """Test that authentication parameters are properly defined in CLI."""
+        from main import main
+        
+        # Mock sys.argv to have authentication parameters
+        test_args = [
+            'main.py', 'publish',
+            '-i', 'test.yaml',
+            '-t', 'Test Survey',
+            '--url', 'https://myorg.maps.arcgis.com',
+            '--username', 'testuser',
+            '--password', 'testpass',
+            '--token', 'test_token',
+            '--cert-file', '/path/to/cert.pem',
+            '--key-file', '/path/to/key.pem'
+        ]
+        
+        # Create a mock Namespace object with all the expected attributes
+        mock_args = argparse.Namespace(
+            command='publish',
+            input='test.yaml',
+            title='Test Survey',
+            url='https://myorg.maps.arcgis.com',
+            username='testuser',
+            password='testpass',
+            token='test_token',
+            cert_file='/path/to/cert.pem',
+            key_file='/path/to/key.pem',
+            version='3.22',
+            folder=None,
+            tags=None,
+            summary=None,
+            description=None,
+            thumbnail=None,
+            media_folder=None,
+            scripts_folder=None,
+            no_web_form=False,
+            no_web_map=False,
+            enable_delete_protection=False,
+            enable_sync=False,
+            schema_changes=False,
+            keep_excel=False,
+            excel_output=None
+        )
+        
+        mock_parse_args.return_value = mock_args
+        
+        # Patch the publish_survey function to prevent actual execution
+        with patch('main.publish_survey') as mock_publish:
+            with patch('sys.argv', test_args):
+                try:
+                    main()
+                except SystemExit:
+                    pass  # Expected when mocking
+                
+                # Verify that publish_survey was called with the mocked args
+                mock_publish.assert_called_once_with(mock_args)
+                
+                # Verify all authentication attributes exist
+                self.assertEqual(mock_args.url, 'https://myorg.maps.arcgis.com')
+                self.assertEqual(mock_args.username, 'testuser')
+                self.assertEqual(mock_args.password, 'testpass')
+                self.assertEqual(mock_args.token, 'test_token')
+                self.assertEqual(mock_args.cert_file, '/path/to/cert.pem')
+                self.assertEqual(mock_args.key_file, '/path/to/key.pem')
+
 
 if __name__ == "__main__":
     unittest.main()

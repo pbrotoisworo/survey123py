@@ -1,5 +1,6 @@
 import argparse
 import sys
+import getpass
 from survey123py.form import FormData
 
 def main():
@@ -43,6 +44,21 @@ def main():
     update_parser.add_argument("--scripts-folder", type=str, help="Path to folder containing JavaScript files.")
     update_parser.add_argument("--no-schema-changes", action="store_true", help="Don't allow schema changes.")
     
+    # Shared authentication arguments - add to both publish and update parsers
+    def add_auth_arguments(parser):
+        """Add authentication arguments to a parser."""
+        auth_group = parser.add_argument_group('authentication options')
+        auth_group.add_argument("--url", type=str, help="ArcGIS Online/Enterprise URL (e.g., https://myorg.maps.arcgis.com)")
+        auth_group.add_argument("--username", type=str, help="ArcGIS username")
+        auth_group.add_argument("--password", type=str, help="ArcGIS password")
+        auth_group.add_argument("--token", type=str, help="ArcGIS access token")
+        auth_group.add_argument("--cert-file", type=str, help="Certificate file for PKI authentication")
+        auth_group.add_argument("--key-file", type=str, help="Key file for PKI authentication")
+    
+    # Add authentication to both publish and update commands
+    add_auth_arguments(publish_parser)
+    add_auth_arguments(update_parser)
+    
     
     # If no command specified, show help
     if len(sys.argv) == 1:
@@ -58,6 +74,49 @@ def main():
         publish_survey(args)
     elif args.command == 'update':
         update_survey(args)
+
+def create_gis_connection(args):
+    """Create a GIS connection based on authentication arguments."""
+    try:
+        from arcgis.gis import GIS
+        
+        # If no authentication parameters provided, use default
+        if not any([args.url, args.username, args.password, args.token, args.cert_file]):
+            return GIS("home")
+        
+        # Build GIS connection parameters
+        gis_args = {}
+        
+        # Set URL (default to ArcGIS Online if not provided)
+        if args.url:
+            gis_args['url'] = args.url
+        elif args.username or args.password or args.token:
+            gis_args['url'] = "https://www.arcgis.com"
+        
+        # Handle different authentication methods
+        if args.token:
+            # Token authentication
+            gis_args['token'] = args.token
+        elif args.cert_file:
+            # PKI authentication
+            gis_args['cert_file'] = args.cert_file
+            if args.key_file:
+                gis_args['key_file'] = args.key_file
+        elif args.username:
+            # Username/password authentication
+            gis_args['username'] = args.username
+            if args.password:
+                gis_args['password'] = args.password
+            else:
+                # Prompt for password if username provided but password not
+                gis_args['password'] = getpass.getpass(f"Password for {args.username}: ")
+        
+        return GIS(**gis_args)
+        
+    except ImportError:
+        raise ImportError("ArcGIS Python API is required for authentication. Install with: pip install arcgis")
+    except Exception as e:
+        raise RuntimeError(f"Authentication failed: {e}")
 
 def generate_excel(args):
     """Generate Excel file from YAML."""
@@ -75,7 +134,9 @@ def publish_survey(args):
     try:
         from survey123py.publisher import Survey123Publisher
         
-        publisher = Survey123Publisher()
+        # Create GIS connection with authentication
+        gis = create_gis_connection(args)
+        publisher = Survey123Publisher(gis)
         
         # Prepare arguments
         publish_args = {
@@ -121,7 +182,9 @@ def update_survey(args):
     try:
         from survey123py.publisher import Survey123Publisher
         
-        publisher = Survey123Publisher()
+        # Create GIS connection with authentication
+        gis = create_gis_connection(args)
+        publisher = Survey123Publisher(gis)
         
         survey = publisher.update_survey(
             survey_id=args.survey_id,

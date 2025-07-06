@@ -55,6 +55,13 @@ def main():
         auth_group.add_argument("--cert-file", type=str, help="Certificate file for PKI authentication")
         auth_group.add_argument("--key-file", type=str, help="Key file for PKI authentication")
     
+    # Convert command (Excel to YAML)
+    convert_parser = subparsers.add_parser('convert', help='Convert Excel file to YAML format')
+    convert_parser.add_argument("-i", "--input", type=str, required=True, help="Path to the Excel file to convert.")
+    convert_parser.add_argument("-o", "--output", type=str, required=True, help="Path to save the generated YAML file.")
+    convert_parser.add_argument("-v", "--version", type=str, default="3.22", help="Survey123 version to use (e.g., 3.22).")
+    convert_parser.add_argument("--validate", action="store_true", help="Validate conversion by converting back to Excel.")
+    
     # Add authentication to both publish and update commands
     add_auth_arguments(publish_parser)
     add_auth_arguments(update_parser)
@@ -74,6 +81,8 @@ def main():
         publish_survey(args)
     elif args.command == 'update':
         update_survey(args)
+    elif args.command == 'convert':
+        convert_excel_to_yaml(args)
 
 def create_gis_connection(args):
     """Create a GIS connection based on authentication arguments."""
@@ -129,6 +138,50 @@ def generate_excel(args):
         print(f"Error: {e}")
         sys.exit(1)
 
+def convert_excel_to_yaml(args):
+    """Convert Excel file to YAML format."""
+    try:
+        from survey123py.converter import ExcelToYamlConverter
+        
+        converter = ExcelToYamlConverter(args.version)
+        
+        print(f"Converting Excel file '{args.input}' to YAML...")
+        yaml_data = converter.convert_excel_to_yaml(args.input, args.output)
+        
+        print(f"✓ Successfully converted to '{args.output}'")
+        
+        # Show summary
+        survey_count = len(yaml_data.get('survey', []))
+        choices_count = len(yaml_data.get('choices', []))
+        settings_count = len(yaml_data.get('settings', {}))
+        
+        print(f"  - Survey questions: {survey_count}")
+        print(f"  - Choice options: {choices_count}")
+        print(f"  - Settings: {settings_count}")
+        
+        # Validate conversion if requested
+        if args.validate:
+            print("\nValidating conversion...")
+            validation_results = converter.validate_conversion(args.input, args.output)
+            
+            if validation_results['success']:
+                print("✓ Validation passed - conversion is accurate")
+            else:
+                print("⚠ Validation warnings:")
+                for sheet, issue in validation_results['differences'].items():
+                    print(f"  - {sheet}: {issue}")
+                
+                for warning in validation_results['warnings']:
+                    print(f"  - {warning}")
+        
+    except ImportError as e:
+        print(f"Error: Missing required dependencies: {e}")
+        print("Install with: pip install pandas openpyxl")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
 def publish_survey(args):
     """Publish survey directly to ArcGIS Online/Enterprise."""
     try:
@@ -177,6 +230,50 @@ def publish_survey(args):
         print(f"Error: {e}")
         sys.exit(1)
 
+def convert_excel_to_yaml(args):
+    """Convert Excel file to YAML format."""
+    try:
+        from survey123py.converter import ExcelToYamlConverter
+        
+        converter = ExcelToYamlConverter(args.version)
+        
+        print(f"Converting Excel file '{args.input}' to YAML...")
+        yaml_data = converter.convert_excel_to_yaml(args.input, args.output)
+        
+        print(f"✓ Successfully converted to '{args.output}'")
+        
+        # Show summary
+        survey_count = len(yaml_data.get('survey', []))
+        choices_count = len(yaml_data.get('choices', []))
+        settings_count = len(yaml_data.get('settings', {}))
+        
+        print(f"  - Survey questions: {survey_count}")
+        print(f"  - Choice options: {choices_count}")
+        print(f"  - Settings: {settings_count}")
+        
+        # Validate conversion if requested
+        if args.validate:
+            print("\nValidating conversion...")
+            validation_results = converter.validate_conversion(args.input, args.output)
+            
+            if validation_results['success']:
+                print("✓ Validation passed - conversion is accurate")
+            else:
+                print("⚠ Validation warnings:")
+                for sheet, issue in validation_results['differences'].items():
+                    print(f"  - {sheet}: {issue}")
+                
+                for warning in validation_results['warnings']:
+                    print(f"  - {warning}")
+        
+    except ImportError as e:
+        print(f"Error: Missing required dependencies: {e}")
+        print("Install with: pip install pandas openpyxl")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
 def update_survey(args):
     """Update an existing survey."""
     try:
@@ -202,6 +299,50 @@ def update_survey(args):
     except ImportError:
         print("Error: ArcGIS Python API is required for update functionality.")
         print("Install with: pip install arcgis")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+def convert_excel_to_yaml(args):
+    """Convert Excel file to YAML format."""
+    try:
+        from survey123py.converter import ExcelToYamlConverter
+        
+        converter = ExcelToYamlConverter(args.version)
+        
+        print(f"Converting Excel file '{args.input}' to YAML...")
+        yaml_data = converter.convert_excel_to_yaml(args.input, args.output)
+        
+        print(f"✓ Successfully converted to '{args.output}'")
+        
+        # Show summary
+        survey_count = len(yaml_data.get('survey', []))
+        choices_count = len(yaml_data.get('choices', []))
+        settings_count = len(yaml_data.get('settings', {}))
+        
+        print(f"  - Survey questions: {survey_count}")
+        print(f"  - Choice options: {choices_count}")
+        print(f"  - Settings: {settings_count}")
+        
+        # Validate conversion if requested
+        if args.validate:
+            print("\nValidating conversion...")
+            validation_results = converter.validate_conversion(args.input, args.output)
+            
+            if validation_results['success']:
+                print("✓ Validation passed - conversion is accurate")
+            else:
+                print("⚠ Validation warnings:")
+                for sheet, issue in validation_results['differences'].items():
+                    print(f"  - {sheet}: {issue}")
+                
+                for warning in validation_results['warnings']:
+                    print(f"  - {warning}")
+        
+    except ImportError as e:
+        print(f"Error: Missing required dependencies: {e}")
+        print("Install with: pip install pandas openpyxl")
         sys.exit(1)
     except Exception as e:
         print(f"Error: {e}")
